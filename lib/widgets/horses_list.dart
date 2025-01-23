@@ -34,46 +34,42 @@ class _HorsesListState extends State<HorsesList> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Lista de Cavalos'),
-      ),
-      body: FutureBuilder<List<Horse>>(
-        future: futureHorses,
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) {
-            // Enquanto a future não se completa, mostra um indicador de carregamento
-            return Center(child: CircularProgressIndicator());
-          } else if (snapshot.hasError) {
-            // Se houver um erro, exibe uma mensagem
-            return Center(child: Text('Erro: ${snapshot.error}'));
-          } else if (snapshot.hasData) {
-            // Se os dados foram recebidos com sucesso, exibe a lista
-            final horses = snapshot.data!;
-            return ListView.builder(
-              itemCount: horses.length,
-              itemBuilder: (context, index) {
-                final horse = horses[index];
-                return Card(
-                  child: ListTile(
-                    leading: horse.profilePicturePath != null
-                        ? Image.network(horse.profilePicturePath!)
-                        : Icon(Icons.image_not_supported),
-                    title: Text(horse.name),
-                    subtitle: Text('Nascimento: ${horse.birthDate}'),
-                    onTap: () {
-                      // Aqui você pode navegar para uma tela de detalhes do cavalo
-                    },
-                  ),
-                );
-              },
-            );
-          } else {
-            // Caso não tenha dados (lista vazia)
-            return Center(child: Text('Nenhum cavalo encontrado.'));
-          }
-        },
-      ),
+    return FutureBuilder<List<Horse>>(
+      future: futureHorses,
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Enquanto a future não carrega, mostra um indicador de carregamento
+
+          return Center(child: CircularProgressIndicator());
+        } else if (snapshot.hasError) {
+          //Se houver um erro, exibe uma mensagem
+          return Center(child: Text('Erro: ${snapshot.error}'));
+        } else if (snapshot.hasData) {
+          //Se os dados foram recebidos com sucesso, exibe a lista
+          final horses = snapshot.data!;
+          return ListView.builder(
+            itemCount: horses.length,
+            itemBuilder: (context, index) {
+              final horse = horses[index];
+              return Card(
+                child: ListTile(
+                  leading: horse.profilePicturePath != null
+                      ? Image.network(horse.profilePicturePath!)
+                      : Icon(Icons.image_not_supported),
+                  title: Text(horse.name),
+                  subtitle: Text('Nascimento: ${horse.birthDate}'),
+                  onTap: () {
+                    //TODO - Ecrã de detalhes do cavalo
+                  },
+                ),
+              );
+            },
+          );
+        } else {
+          // Caso não tenha dados (lista vazia)
+          return Center(child: Text('Nenhum cavalo encontrado.'));
+        }
+      },
     );
   }
 }
