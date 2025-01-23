@@ -1,20 +1,20 @@
+import 'package:equus/widgets/home_page.dart';
+import 'package:equus/widgets/horses_list.dart';
 import 'package:flutter/material.dart';
 
-class HomePageEquus extends StatefulWidget {
-  const HomePageEquus({super.key});
+class Home extends StatefulWidget {
+  const Home({super.key});
 
   @override
-  State<HomePageEquus> createState() => _HomePageEquusState();
+  State<Home> createState() => _HomeState();
 }
 
-class _HomePageEquusState extends State<HomePageEquus> {
+class _HomeState extends State<Home> {
   int _selectedIndex = 0;
 
   static const List<Widget> _widgetOptions = <Widget>[
-    Text('Home Page',
-        style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
-    Text('Horses List',
-        style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
+    HomePage(),
+    HorsesList(),
     Text('Owners List',
         style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
     Text('Account Page',
@@ -30,13 +30,15 @@ class _HomePageEquusState extends State<HomePageEquus> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('I-Equus')),
+      appBar: AppBar(title: const Text('iEquus')),
       body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
+        //o widget da Bottom Navigation bar
         showSelectedLabels: true,
         showUnselectedLabels: true,
         currentIndex: _selectedIndex,
-        onTap: _onItemTapped,
+        onTap:
+            _onItemTapped, //isto referencia uma função. Quando um item na BottomNavigationBar é clicado, o widget BottomNavigationBar sabe qual a função chamar e adicona-lhe automaticamente o argumento da função
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),
