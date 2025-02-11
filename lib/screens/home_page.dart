@@ -1,19 +1,18 @@
 import 'dart:io';
-
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'image_coordinates_picker.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});
 
   @override
-  State<HomePage> createState() {
-    return _HomePageState();
-  }
+  State<HomePage> createState() => _HomePageState();
 }
 
 class _HomePageState extends State<HomePage> {
   File? _selectedImage;
+  List<Offset> _coordinates = [];
 
   void _takePicture() async {
     final imagePicker = ImagePicker();
@@ -23,27 +22,71 @@ class _HomePageState extends State<HomePage> {
     if (pickedImage == null) {
       return;
     }
+
     setState(() {
       _selectedImage = File(pickedImage.path);
     });
+
+    // Await the result from ImageCoordinatesPicker
+    final coordinates = await Navigator.push<List<Offset>>(
+      context,
+      MaterialPageRoute(
+        builder: (context) => ImageCoordinatesPicker(image: _selectedImage!),
+      ),
+    );
+
+    // Update coordinates if not null
+    if (coordinates != null) {
+      setState(() {
+        _coordinates = coordinates;
+      });
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     Widget content = TextButton.icon(
       onPressed: _takePicture,
-      label: Text("Take Picture"),
+      icon: const Icon(Icons.camera),
+      label: const Text("Take Picture"),
     );
 
     if (_selectedImage != null) {
       content = Image.file(_selectedImage!, fit: BoxFit.cover);
     }
 
-    return Container(
-      height: 250,
-      width: double.infinity,
-      alignment: Alignment.center,
-      child: content,
+    return Scaffold(
+      appBar: AppBar(title: const Text("Home Page")),
+      body: Center(
+        child: Column(
+          children: [
+            Container(
+              height: 250,
+              width: double.infinity,
+              alignment: Alignment.center,
+              child: content,
+            ),
+            const SizedBox(height: 16),
+            const Text(
+              "Selected Coordinates:",
+              style: TextStyle(fontWeight: FontWeight.bold),
+            ),
+            Expanded(
+              child: ListView.builder(
+                itemCount: _coordinates.length,
+                itemBuilder: (context, index) {
+                  final coord = _coordinates[index];
+                  return Padding(
+                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                    child: Text(
+                        "Point ${index + 1}: (x: ${coord.dx.toStringAsFixed(1)}, y: ${coord.dy.toStringAsFixed(1)})"),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
