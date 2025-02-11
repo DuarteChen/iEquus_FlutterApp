@@ -1,0 +1,4 @@
+{
+    "dart.flutterSdkPath": "~/utils/flutter",
+    "java.compile.nullAnalysis.mode": "automatic"
+}

@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import 'package:equus/widgets/home.dart';
+import 'package:equus/screens/home.dart';
 
 void main() {
   runApp(const MyApp());

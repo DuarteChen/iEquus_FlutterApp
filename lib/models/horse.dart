@@ -2,7 +2,7 @@ class Horse {
   final int idHorse;
   final String name;
   final String? profilePicturePath;
-  final String birthDate;
+  final String? birthDate;
   final String? pictureRightFrontPath;
   final String? pictureLeftFrontPath;
   final String? pictureRightHindPath;

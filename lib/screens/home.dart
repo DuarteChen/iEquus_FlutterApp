@@ -1,4 +1,4 @@
-import 'package:equus/widgets/home_page.dart';
+import 'package:equus/screens/home_page.dart';
 import 'package:equus/widgets/horses_list.dart';
 import 'package:flutter/material.dart';
 
