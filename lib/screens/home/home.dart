@@ -1,5 +1,5 @@
-import 'package:equus/screens/home_page.dart';
-import 'package:equus/widgets/horses_list.dart';
+import 'package:equus/screens/home/home_page.dart';
+import 'package:equus/screens/horses/horses_list.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -30,7 +30,6 @@ class _HomeState extends State<Home> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('iEquus')),
       body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
       bottomNavigationBar: BottomNavigationBar(
         //o widget da Bottom Navigation bar

@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
-import 'image_coordinates_picker.dart';
+import '../appointment/image_coordinates_picker.dart';
 
 class HomePage extends StatefulWidget {
   const HomePage({super.key});

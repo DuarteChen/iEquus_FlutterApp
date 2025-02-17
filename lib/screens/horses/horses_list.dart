@@ -22,7 +22,7 @@ class _HorsesListState extends State<HorsesList> {
   }
 
   Future<List<Horse>> fetchHorses() async {
-    final response = await http.get(Uri.parse('http://localhost:9090/horses'));
+    final response = await http.get(Uri.parse('http://10.0.2.2:9090/horses'));
 
     if (response.statusCode == 200) {
       final List<dynamic> horseJson = json.decode(response.body);

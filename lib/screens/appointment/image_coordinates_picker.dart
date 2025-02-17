@@ -1,5 +1,5 @@
 import 'dart:io';
-import 'package:equus/screens/coordinates_painter.dart';
+import 'package:equus/screens/appointment/coordinates_painter.dart';
 import 'package:flutter/material.dart';
 
 class ImageCoordinatesPicker extends StatefulWidget {
