@@ -13,6 +13,8 @@ class HomePage extends StatefulWidget {
 class _HomePageState extends State<HomePage> {
   File? _selectedImage;
   List<Offset> _coordinates = [];
+  var imageWidth;
+  var imageHeight;
 
   void _takePicture() async {
     final imagePicker = ImagePicker();
@@ -27,11 +29,21 @@ class _HomePageState extends State<HomePage> {
       _selectedImage = File(pickedImage.path);
     });
 
-    // Await the result from ImageCoordinatesPicker
+    final image = await decodeImageFromList(_selectedImage!.readAsBytesSync());
+
+    setState(() {
+      imageWidth = image.width;
+      imageHeight = image.height;
+    });
+
     final coordinates = await Navigator.push<List<Offset>>(
       context,
       MaterialPageRoute(
-        builder: (context) => ImageCoordinatesPicker(image: _selectedImage!),
+        builder: (context) => ImageCoordinatesPicker(
+          image: _selectedImage!,
+          imageWidth: imageWidth,
+          imageHeight: imageHeight,
+        ),
       ),
     );
 
@@ -66,6 +78,7 @@ class _HomePageState extends State<HomePage> {
               alignment: Alignment.center,
               child: content,
             ),
+            Text("Width: $imageWidth; Height: $imageHeight "),
             const SizedBox(height: 16),
             const Text(
               "Selected Coordinates:",

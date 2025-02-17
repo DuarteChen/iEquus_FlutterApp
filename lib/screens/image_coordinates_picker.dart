@@ -1,10 +1,18 @@
 import 'dart:io';
+import 'package:equus/screens/coordinates_painter.dart';
 import 'package:flutter/material.dart';
 
 class ImageCoordinatesPicker extends StatefulWidget {
   final File image;
+  final int imageWidth;
+  final int imageHeight;
 
-  const ImageCoordinatesPicker({super.key, required this.image});
+  const ImageCoordinatesPicker({
+    super.key,
+    required this.image,
+    required this.imageWidth,
+    required this.imageHeight,
+  });
 
   @override
   State<ImageCoordinatesPicker> createState() => _ImageCoordinatesPickerState();
@@ -12,51 +20,66 @@ class ImageCoordinatesPicker extends StatefulWidget {
 
 class _ImageCoordinatesPickerState extends State<ImageCoordinatesPicker> {
   final List<Offset> _coordinates = [];
+  final GlobalKey _imageKey = GlobalKey();
 
-  void _addCoordinate(TapDownDetails details) {
-    if (_coordinates.length < 14) {
-      setState(() {
-        _coordinates.add(details.localPosition);
-      });
-    }
+  void _addCoordinate(TapUpDetails details) {
+    final RenderBox renderBox =
+        _imageKey.currentContext!.findRenderObject() as RenderBox;
+    final Size displayedSize = renderBox.size;
+
+    final Offset tapPosition = details.localPosition;
+
+    // Escalar para coordenadas reais da imagem
+    final double scaleX = widget.imageWidth / displayedSize.width;
+    final double scaleY = widget.imageHeight / displayedSize.height;
+
+    final double realX = tapPosition.dx * scaleX;
+    final double realY = tapPosition.dy * scaleY;
+
+    setState(() {
+      _coordinates.add(Offset(realX, realY));
+    });
+
+    debugPrint(
+        "Marcado ponto real: (${realX.toStringAsFixed(2)}, ${realY.toStringAsFixed(2)})");
+  }
+
+  void _finishSelection() {
+    Navigator.pop(context, _coordinates);
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text("Select 14 Coordinates"),
+        title: const Text('Selecionar Coordenadas'),
         actions: [
-          if (_coordinates.length == 14)
-            IconButton(
-              icon: const Icon(Icons.check),
-              onPressed: () {
-                Navigator.pop(context, _coordinates);
-              },
-            ),
+          IconButton(
+            icon: const Icon(Icons.check),
+            onPressed: _finishSelection,
+          ),
         ],
       ),
-      body: GestureDetector(
-        onTapDown: _addCoordinate,
-        child: Stack(
-          children: [
-            Image.file(widget.image, fit: BoxFit.cover, width: double.infinity),
-            ..._coordinates.map(
-              (point) => Positioned(
-                left: point.dx - 8,
-                top: point.dy - 8,
-                child: Container(
-                  width: 16,
-                  height: 16,
-                  decoration: BoxDecoration(
-                    color: Colors.red,
-                    shape: BoxShape.circle,
-                    border: Border.all(color: Colors.white, width: 2),
+      body: Center(
+        child: GestureDetector(
+          onTapUp: _addCoordinate,
+          child: Stack(
+            children: [
+              Image.file(
+                widget.image,
+                key: _imageKey,
+              ),
+              Positioned.fill(
+                child: CustomPaint(
+                  painter: CoordinatePainter(
+                    coordinates: _coordinates,
+                    imageWidth: widget.imageWidth,
+                    imageHeight: widget.imageHeight,
                   ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );
