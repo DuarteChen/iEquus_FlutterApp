@@ -12,51 +12,74 @@ class Home extends StatefulWidget {
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
 
-  static const List<Widget> _widgetOptions = <Widget>[
-    HomePage(),
-    HorsesList(),
-    Text('Owners List',
-        style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
-    Text('Account Page',
-        style: TextStyle(fontSize: 35, fontWeight: FontWeight.bold)),
-  ];
-
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index; // Update the selected index
     });
   }
 
+  String _getAppBarTitle([int? requiredPage]) {
+    int index = requiredPage ??
+        _selectedIndex; // Use requiredPage if provided, otherwise _selectedIndex
+    switch (index) {
+      case 0:
+        return 'Home';
+      case 1:
+        return 'Horses';
+      case 2:
+        return 'Owners';
+      case 3:
+        return 'Profile';
+      default:
+        return 'App';
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Center(child: _widgetOptions.elementAt(_selectedIndex)),
+      appBar: AppBar(
+        title: Text(
+          _getAppBarTitle(),
+        ),
+        centerTitle: true,
+      ),
+      body: IndexedStack(
+        index: _selectedIndex,
+        children: [
+          HomePage(),
+          HorsesList(),
+          //OwnersPage(),
+          //ProfilePage(),
+        ],
+      ),
       bottomNavigationBar: BottomNavigationBar(
         //o widget da Bottom Navigation bar
         showSelectedLabels: true,
         showUnselectedLabels: true,
+        enableFeedback: true,
         currentIndex: _selectedIndex,
         onTap:
             _onItemTapped, //isto referencia uma função. Quando um item na BottomNavigationBar é clicado, o widget BottomNavigationBar sabe qual a função chamar e adicona-lhe automaticamente o argumento da função
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),
-            label: 'Home',
+            label: _getAppBarTitle(1),
             backgroundColor: Colors.blue[800],
           ),
           BottomNavigationBarItem(
             icon: const ImageIcon(AssetImage('assets/icons/horse_icon.png')),
-            label: 'Horses',
+            label: _getAppBarTitle(2),
             backgroundColor: Colors.blue[800],
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.people),
-            label: 'Owners',
+            label: _getAppBarTitle(3),
             backgroundColor: Colors.blue[800],
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.person),
-            label: 'Profile',
+            label: _getAppBarTitle(4),
             backgroundColor: Colors.blue[800],
           ),
         ],

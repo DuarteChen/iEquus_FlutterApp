@@ -8,6 +8,7 @@ class Horse {
   final String? pictureRightHindPath;
   final String? pictureLeftHindPath;
 
+  //Contructor
   Horse({
     required this.idHorse,
     required this.name,

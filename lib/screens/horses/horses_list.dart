@@ -18,12 +18,19 @@ class _HorsesListState extends State<HorsesList> {
   @override
   void initState() {
     super.initState();
-    futureHorses = fetchHorses();
+    futureHorses = _fetchHorses(); // Initialize the first call to fetch horses
   }
 
-  Future<List<Horse>> fetchHorses() async {
-    final response = await http.get(Uri.parse('http://10.0.2.2:9090/horses'));
+  // Refresh function when user pulls down to refresh
+  Future<void> _refreshHorses() async {
+    setState(() {
+      futureHorses = _fetchHorses(); // Reload the list by fetching horses again
+    });
+  }
 
+  // Fetch horses from the server
+  Future<List<Horse>> _fetchHorses() async {
+    final response = await http.get(Uri.parse('http://10.0.2.2:9090/horses'));
     if (response.statusCode == 200) {
       final List<dynamic> horseJson = json.decode(response.body);
       return horseJson.map((json) => Horse.fromJson(json)).toList();
@@ -34,42 +41,40 @@ class _HorsesListState extends State<HorsesList> {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<List<Horse>>(
-      future: futureHorses,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          // Enquanto a future não carrega, mostra um indicador de carregamento
-
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          //Se houver um erro, exibe uma mensagem
-          return Center(child: Text('Erro: ${snapshot.error}'));
-        } else if (snapshot.hasData) {
-          //Se os dados foram recebidos com sucesso, exibe a lista
-          final horses = snapshot.data!;
-          return ListView.builder(
-            itemCount: horses.length,
-            itemBuilder: (context, index) {
-              final horse = horses[index];
-              return Card(
-                child: ListTile(
-                  leading: horse.profilePicturePath != null
-                      ? Image.network(horse.profilePicturePath!)
-                      : Icon(Icons.image_not_supported),
-                  title: Text(horse.name),
-                  subtitle: Text('Nascimento: ${horse.birthDate}'),
-                  onTap: () {
-                    //TODO - Ecrã de detalhes do cavalo
-                  },
-                ),
-              );
-            },
-          );
-        } else {
-          // Caso não tenha dados (lista vazia)
-          return Center(child: Text('Nenhum cavalo encontrado.'));
-        }
-      },
+    return RefreshIndicator(
+      onRefresh: _refreshHorses, // Called when user pulls down to refresh
+      child: FutureBuilder<List<Horse>>(
+        future: futureHorses,
+        builder: (context, snapshot) {
+          if (snapshot.connectionState == ConnectionState.waiting) {
+            return Center(child: CircularProgressIndicator());
+          } else if (snapshot.hasError) {
+            return Center(child: Text('Erro: ${snapshot.error}'));
+          } else if (snapshot.hasData) {
+            final horses = snapshot.data!;
+            return ListView.builder(
+              itemCount: horses.length,
+              itemBuilder: (context, index) {
+                final horse = horses[index];
+                return Card(
+                  child: ListTile(
+                    leading: horse.profilePicturePath != null
+                        ? Image.network(horse.profilePicturePath!)
+                        : Icon(Icons.image_not_supported),
+                    title: Text(horse.name),
+                    subtitle: Text('Nascimento: ${horse.birthDate}'),
+                    onTap: () {
+                      //TODO - Ecrã de detalhes do cavalo
+                    },
+                  ),
+                );
+              },
+            );
+          } else {
+            return Center(child: Text('Nenhum cavalo encontrado.'));
+          }
+        },
+      ),
     );
   }
 }

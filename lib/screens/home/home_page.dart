@@ -1,4 +1,6 @@
 import 'dart:io';
+import 'package:equus/screens/horses/create_horse_screen.dart';
+import 'package:equus/widgets/main_button.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../appointment/image_coordinates_picker.dart';
@@ -57,7 +59,47 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Widget content = TextButton.icon(
+    return Padding(
+      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+      child: Column(
+        children: [
+          Expanded(
+            child: SingleChildScrollView(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.stretch,
+                children: [
+                  MainButton(
+                      iconImage: 'assets/icons/horse_new_black.png',
+                      buttonText: "New Horse",
+                      onTap: () {
+                        // Navigate to CreateHorseScreen
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => CreateHorseScreen()),
+                        );
+                      }),
+                  SizedBox(height: 16),
+                  MainButton(
+                      iconImage: 'assets/icons/appointment_new_black.png',
+                      buttonText: "New Appointment",
+                      onTap: () {}),
+                  SizedBox(height: 16),
+                  MainButton(
+                      iconImage: 'assets/icons/client_new_black.png',
+                      buttonText: "New Client",
+                      onTap: () {}),
+                ],
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+/* Take picture button
+   Widget content = TextButton.icon(
       onPressed: _takePicture,
       icon: const Icon(Icons.camera),
       label: const Text("Take Picture"),
@@ -67,39 +109,35 @@ class _HomePageState extends State<HomePage> {
       content = Image.file(_selectedImage!, fit: BoxFit.cover);
     }
 
-    return Scaffold(
-      appBar: AppBar(title: const Text("Home Page")),
-      body: Center(
-        child: Column(
-          children: [
-            Container(
-              height: 250,
-              width: double.infinity,
-              alignment: Alignment.center,
-              child: content,
+    return Center(
+      child: Column(
+        children: [
+          Container(
+            height: 250,
+            width: double.infinity,
+            alignment: Alignment.center,
+            child: content,
+          ),
+          Text("Width: $imageWidth; Height: $imageHeight "),
+          const SizedBox(height: 16),
+          const Text(
+            "Selected Coordinates:",
+            style: TextStyle(fontWeight: FontWeight.bold),
+          ),
+          Expanded(
+            child: ListView.builder(
+              itemCount: _coordinates.length,
+              itemBuilder: (context, index) {
+                final coord = _coordinates[index];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 8.0),
+                  child: Text(
+                      "Point ${index + 1}: (x: ${coord.dx.toStringAsFixed(1)}, y: ${coord.dy.toStringAsFixed(1)})"),
+                );
+              },
             ),
-            Text("Width: $imageWidth; Height: $imageHeight "),
-            const SizedBox(height: 16),
-            const Text(
-              "Selected Coordinates:",
-              style: TextStyle(fontWeight: FontWeight.bold),
-            ),
-            Expanded(
-              child: ListView.builder(
-                itemCount: _coordinates.length,
-                itemBuilder: (context, index) {
-                  final coord = _coordinates[index];
-                  return Padding(
-                    padding: const EdgeInsets.symmetric(horizontal: 8.0),
-                    child: Text(
-                        "Point ${index + 1}: (x: ${coord.dx.toStringAsFixed(1)}, y: ${coord.dy.toStringAsFixed(1)})"),
-                  );
-                },
-              ),
-            ),
-          ],
-        ),
+          ),
+        ],
       ),
-    );
-  }
+    ); */
 }
