@@ -68,23 +68,31 @@ class _HomePageState extends State<HomePage> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.stretch,
                 children: [
+                  Padding(
+                    padding: const EdgeInsets.only(left: 16.0, bottom: 8),
+                    child: Text(
+                      "Medical Services",
+                      style: TextStyle(
+                        fontSize: 20,
+                      ),
+                    ),
+                  ),
                   MainButton(
                       iconImage: 'assets/icons/horse_new_black.png',
                       buttonText: "New Horse",
                       onTap: () {
-                        // Navigate to CreateHorseScreen
                         Navigator.push(
                           context,
                           MaterialPageRoute(
                               builder: (context) => CreateHorseScreen()),
                         );
                       }),
-                  SizedBox(height: 16),
+                  SizedBox(height: 8),
                   MainButton(
                       iconImage: 'assets/icons/appointment_new_black.png',
                       buttonText: "New Appointment",
                       onTap: () {}),
-                  SizedBox(height: 16),
+                  SizedBox(height: 8),
                   MainButton(
                       iconImage: 'assets/icons/client_new_black.png',
                       buttonText: "New Client",

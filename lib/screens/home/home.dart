@@ -64,22 +64,22 @@ class _HomeState extends State<Home> {
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),
-            label: _getAppBarTitle(1),
+            label: _getAppBarTitle(0),
             backgroundColor: Colors.blue[800],
           ),
           BottomNavigationBarItem(
             icon: const ImageIcon(AssetImage('assets/icons/horse_icon.png')),
-            label: _getAppBarTitle(2),
+            label: _getAppBarTitle(1),
             backgroundColor: Colors.blue[800],
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.people),
-            label: _getAppBarTitle(3),
+            label: _getAppBarTitle(2),
             backgroundColor: Colors.blue[800],
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.person),
-            label: _getAppBarTitle(4),
+            label: _getAppBarTitle(3),
             backgroundColor: Colors.blue[800],
           ),
         ],
