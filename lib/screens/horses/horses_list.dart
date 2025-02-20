@@ -2,6 +2,7 @@ import 'package:equus/models/horse.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
+import 'package:intl/intl.dart';
 
 class HorsesList extends StatefulWidget {
   const HorsesList({super.key});
@@ -57,17 +58,21 @@ class _HorsesListState extends State<HorsesList> {
               itemBuilder: (context, index) {
                 final horse = horses[index];
                 return Card(
-                  child: ListTile(
-                    leading: horse.profilePicturePath != null
-                        ? Image.network(horse.profilePicturePath!)
-                        : Icon(Icons.image_not_supported),
-                    title: Text(horse.name),
-                    subtitle: Text('Nascimento: ${horse.birthDate}'),
-                    onTap: () {
-                      //TODO - Ecrã de detalhes do cavalo
-                    },
+                    child: ListTile(
+                  leading: horse.profilePicturePath != null
+                      ? Image.network(horse.profilePicturePath!)
+                      : Icon(Icons.image_not_supported),
+                  title: Text(horse.name),
+                  subtitle: Text(
+                    horse.birthDate != null
+                        ? DateFormat('dd-MM-yyyy')
+                            .format(horse.birthDate!) // Format the DateTime
+                        : 'No birth date',
                   ),
-                );
+                  onTap: () {
+                    // TODO - Ecrã de detalhes do cavalo
+                  },
+                ));
               },
             );
           } else {

@@ -11,10 +11,19 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter',
+      title: 'iEquus App',
       theme: ThemeData(
-        primarySwatch: Colors.blue,
-      ),
+          primaryColor: Colors.blue[800],
+          colorScheme: ColorScheme(
+              brightness: Brightness.light,
+              primary: Color.fromARGB(255, 21, 101, 192),
+              onPrimary: Color.fromARGB(255, 255, 255, 255),
+              secondary: Color.fromARGB(255, 21, 101, 192),
+              onSecondary: Color.fromARGB(255, 255, 255, 255),
+              error: Color.fromARGB(255, 21, 101, 192),
+              onError: Color.fromARGB(255, 192, 21, 21),
+              surface: Color.fromARGB(255, 255, 255, 255),
+              onSurface: Color.fromARGB(255, 21, 101, 192))),
       home: const Home(),
     );
   }

@@ -1,6 +1,6 @@
 import 'dart:io';
 import 'package:equus/screens/horses/create_horse_screen.dart';
-import 'package:equus/widgets/main_button.dart';
+import 'package:equus/widgets/main_button_blue.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 import '../appointment/image_coordinates_picker.dart';
@@ -77,7 +77,7 @@ class _HomePageState extends State<HomePage> {
                       ),
                     ),
                   ),
-                  MainButton(
+                  MainButtonBlue(
                       iconImage: 'assets/icons/horse_new_black.png',
                       buttonText: "New Horse",
                       onTap: () {
@@ -88,12 +88,12 @@ class _HomePageState extends State<HomePage> {
                         );
                       }),
                   SizedBox(height: 8),
-                  MainButton(
+                  MainButtonBlue(
                       iconImage: 'assets/icons/appointment_new_black.png',
                       buttonText: "New Appointment",
                       onTap: () {}),
                   SizedBox(height: 8),
-                  MainButton(
+                  MainButtonBlue(
                       iconImage: 'assets/icons/client_new_black.png',
                       buttonText: "New Client",
                       onTap: () {}),
