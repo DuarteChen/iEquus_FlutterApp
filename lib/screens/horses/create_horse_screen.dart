@@ -2,6 +2,7 @@ import 'dart:io';
 import 'package:equus/models/horse.dart';
 import 'package:equus/widgets/main_button_blue.dart';
 import 'package:equus/widgets/profile_image_preview.dart';
+import 'package:equus/widgets/small_image_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
@@ -19,20 +20,24 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   DateTime? _selectedDate;
-
+  //Profile Picture
   File? _profilePictureFile;
+  //Castanha do cavalo
+  File? _pictureRightFrontFile;
+  File? _pictureLeftFrontFile;
+  File? _pictureRightHindFile;
+  File? _pictureLeftHindFile;
 
-  Future<Image?> pickImage() async {
+  //esta função recebe uma função que atualiza que corre dentro desta função ;)
+  Future<void> pickImage(Function(File) updateImage) async {
     final imagePicker = ImagePicker();
     final pickedImage = await imagePicker.pickImage(source: ImageSource.camera);
 
     if (pickedImage != null) {
       setState(() {
-        _profilePictureFile = File(pickedImage.path);
+        updateImage(File(pickedImage.path));
       });
-      return Image.file(File(pickedImage.path));
     }
-    return null;
   }
 
   Future<void> _selectDate(BuildContext context) async {
@@ -68,6 +73,52 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
         request.fields['birthDate'] =
             '${horse.birthDate!.year}-${horse.birthDate!.month.toString().padLeft(2, '0')}-${horse.birthDate!.day.toString().padLeft(2, '0')}';
       }
+      //Profile Pic
+      if (_profilePictureFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'photo',
+            _profilePictureFile!.path,
+          ),
+        );
+      }
+      //Hinds Pics
+      if (_pictureLeftFrontFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'pictureLeftFront',
+            _pictureLeftFrontFile!.path,
+          ),
+        );
+      }
+
+      if (_pictureRightFrontFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'pictureRightFront',
+            _pictureRightFrontFile!.path,
+          ),
+        );
+      }
+
+      if (_pictureLeftHindFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'pictureLeftHind',
+            _pictureLeftHindFile!.path,
+          ),
+        );
+      }
+
+      if (_pictureRightHindFile != null) {
+        request.files.add(
+          await http.MultipartFile.fromPath(
+            'pictureRightHind',
+            _pictureRightHindFile!.path,
+          ),
+        );
+      }
+
       var response = await request.send();
 
       if (response.statusCode == 201) {
@@ -86,33 +137,37 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: Column(
-        children: [
-          ProfileImagePreview(
-              profileImageFile: _profilePictureFile, onEditPressed: pickImage),
-          Container(
-            width: double.infinity,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Colors.blue[800],
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(15),
-                bottomRight: Radius.circular(15),
+      body: SingleChildScrollView(
+        child: Column(
+          children: [
+            ProfileImagePreview(
+              profileImageFile: _profilePictureFile,
+              onEditPressed: () => pickImage((newImage) {
+                _profilePictureFile = newImage;
+              }),
+            ),
+            Container(
+              width: double.infinity,
+              height: 50,
+              decoration: BoxDecoration(
+                color: Colors.blue[800],
+                borderRadius: const BorderRadius.only(
+                  bottomLeft: Radius.circular(15),
+                  bottomRight: Radius.circular(15),
+                ),
+              ),
+              child: const Center(
+                child: Text(
+                  'Create a new Horse',
+                  style: TextStyle(color: Colors.white, fontSize: 22),
+                ),
               ),
             ),
-            child: const Center(
-              child: Text(
-                'Create a new Horse',
-                style: TextStyle(color: Colors.white, fontSize: 22),
-              ),
-            ),
-          ),
-//Form
-          Expanded(
-            child: Padding(
+            // Form
+            Padding(
               padding: const EdgeInsets.all(16.0),
               child: Form(
-                key: _formKey, // Wrap it here!
+                key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
@@ -132,6 +187,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
+                    // Date Picker
                     InkWell(
                       onTap: () => _selectDate(context),
                       child: InputDecorator(
@@ -149,23 +205,62 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                         ),
                       ),
                     ),
+                    const SizedBox(height: 16),
+                    // Castanhas Images
+
+                    Row(
+                      children: [
+                        SmallImagePreview(
+                          profileImageFile: _pictureLeftFrontFile,
+                          onEditPressed: () => pickImage((newImage) {
+                            _pictureLeftFrontFile = newImage;
+                          }),
+                        ),
+                        const SizedBox(width: 16),
+                        SmallImagePreview(
+                          profileImageFile: _pictureRightFrontFile,
+                          onEditPressed: () => pickImage((newImage) {
+                            _pictureRightFrontFile = newImage;
+                          }),
+                        ),
+                      ],
+                    ),
+
+                    const SizedBox(height: 16),
+                    Row(
+                      children: [
+                        SmallImagePreview(
+                          profileImageFile: _pictureLeftHindFile,
+                          onEditPressed: () => pickImage((newImage) {
+                            _pictureLeftHindFile = newImage;
+                          }),
+                        ),
+                        const SizedBox(width: 16),
+                        SmallImagePreview(
+                          profileImageFile: _pictureRightHindFile,
+                          onEditPressed: () => pickImage((newImage) {
+                            _pictureRightHindFile = newImage;
+                          }),
+                        ),
+                      ],
+                    ),
                   ],
                 ),
               ),
             ),
+            const SizedBox(height: 16), // Optional space before the button
+          ],
+        ),
+      ),
+      bottomNavigationBar: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: SizedBox(
+          width: double.infinity,
+          child: MainButtonBlue(
+            buttonText: 'Save',
+            onTap: _saveHorse,
           ),
-//Save Button
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: SizedBox(
-              width: double.infinity,
-              child: MainButtonBlue(
-                buttonText: 'Save',
-                onTap: _saveHorse,
-              ),
-            ),
-          ),
-        ],
+        ),
       ),
     );
   }

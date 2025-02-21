@@ -19,7 +19,7 @@ class _HorsesListState extends State<HorsesList> {
   @override
   void initState() {
     super.initState();
-    futureHorses = _fetchHorses(); // Initialize the first call to fetch horses
+    futureHorses = _fetchHorses();
   }
 
   // Refresh function when user pulls down to refresh
