@@ -88,7 +88,7 @@ class _HomePageState extends State<HomePage> {
               SizedBox(height: 8),
               MainButtonBlue(
                   iconImage: 'assets/icons/appointment_new_black.png',
-                  buttonText: "New Appointment",
+                  buttonText: "New Measure",
                   onTap: () {}),
               SizedBox(height: 8),
               MainButtonBlue(

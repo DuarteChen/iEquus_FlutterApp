@@ -14,20 +14,20 @@ class ProfileImagePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Container(
+    return SizedBox(
       width: double.infinity,
       height: MediaQuery.of(context).size.height / 4,
-      decoration: BoxDecoration(
-        color: Colors.grey[300],
-      ),
       child: Stack(
         children: [
           // If there's no image, display text
           if (profileImageFile == null)
-            const Center(
-              child: Text(
-                'Image here',
-                style: TextStyle(color: Colors.grey),
+            Padding(
+              padding: const EdgeInsets.all(16),
+              child: Center(
+                child: Image.asset(
+                  'assets/images/horse_empty_profile_image.png', // Ensure the path is correct
+                  fit: BoxFit.cover,
+                ),
               ),
             )
           else
@@ -66,12 +66,16 @@ class ProfileImagePreview extends StatelessWidget {
           Positioned(
             bottom: 10,
             right: 10,
-            child: IconButton(
-              icon: Icon(
-                Icons.edit,
-                color: Theme.of(context).primaryColor,
+            child: CircleAvatar(
+              backgroundColor: Theme.of(context).primaryColor,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.edit,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                onPressed: onEditPressed,
               ),
-              onPressed: onEditPressed,
             ),
           ),
         ],

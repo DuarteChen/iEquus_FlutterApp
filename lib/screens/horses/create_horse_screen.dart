@@ -220,9 +220,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                     ),
                     const SizedBox(height: 8),
                     // Image rows
-                    Row(
-                      children: [Text("Left"), Text("Right")],
-                    ),
+
                     Expanded(
                       child: Row(
                         children: [
@@ -240,6 +238,8 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                   _pictureLeftFrontFile = newImage;
                                 });
                               }),
+                              emptyLegImage:
+                                  'assets/images/front_left_leg_image.png',
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -251,6 +251,8 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                   _pictureRightFrontFile = newImage;
                                 });
                               }),
+                              emptyLegImage:
+                                  'assets/images/front_right_leg_image.png',
                             ),
                           ),
                         ],
@@ -272,6 +274,8 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                   _pictureLeftHindFile = newImage;
                                 });
                               }),
+                              emptyLegImage:
+                                  'assets/images/hind_left_leg_image.png',
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -283,6 +287,8 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                   _pictureRightHindFile = newImage;
                                 });
                               }),
+                              emptyLegImage:
+                                  'assets/images/hind_right_leg_image.png',
                             ),
                           ),
                         ],

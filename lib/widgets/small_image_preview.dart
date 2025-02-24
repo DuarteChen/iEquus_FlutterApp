@@ -5,18 +5,20 @@ class SmallImagePreview extends StatelessWidget {
   final File? profileImageFile;
 
   final VoidCallback onEditPressed;
+  final String emptyLegImage;
 
   const SmallImagePreview({
     super.key,
     required this.profileImageFile,
     required this.onEditPressed,
+    required this.emptyLegImage,
   });
 
   @override
   Widget build(BuildContext context) {
     return Container(
       decoration: BoxDecoration(
-        border: Border.all(color: Colors.black),
+        border: Border.all(color: Theme.of(context).primaryColor),
         borderRadius: BorderRadius.circular(12),
       ),
       clipBehavior: Clip.hardEdge,
@@ -24,11 +26,13 @@ class SmallImagePreview extends StatelessWidget {
         fit: StackFit.expand,
         children: [
           if (profileImageFile == null)
-            const Center(
-              child: Text(
-                'Image here',
-                style: TextStyle(color: Colors.grey),
-              ),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: Center(
+                  child: Image.asset(
+                emptyLegImage,
+                color: const Color.fromARGB(255, 222, 222, 222),
+              )),
             )
           else
             Image.file(
@@ -41,7 +45,7 @@ class SmallImagePreview extends StatelessWidget {
             bottom: 8,
             right: 8,
             child: CircleAvatar(
-              backgroundColor: Colors.black54,
+              backgroundColor: Theme.of(context).primaryColor,
               child: IconButton(
                 icon: const Icon(
                   Icons.edit,
