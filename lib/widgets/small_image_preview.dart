@@ -31,7 +31,7 @@ class SmallImagePreview extends StatelessWidget {
               child: Center(
                   child: Image.asset(
                 emptyLegImage,
-                color: const Color.fromARGB(255, 222, 222, 222),
+                color: Theme.of(context).primaryColor,
               )),
             )
           else

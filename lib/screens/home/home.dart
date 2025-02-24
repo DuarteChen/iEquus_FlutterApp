@@ -65,22 +65,22 @@ class _HomeState extends State<Home> {
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),
             label: _getAppBarTitle(0),
-            backgroundColor: Colors.blue[800],
+            backgroundColor: Theme.of(context).primaryColor,
           ),
           BottomNavigationBarItem(
             icon: const ImageIcon(AssetImage('assets/icons/horse_icon.png')),
             label: _getAppBarTitle(1),
-            backgroundColor: Colors.blue[800],
+            backgroundColor: Theme.of(context).primaryColor,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.people),
             label: _getAppBarTitle(2),
-            backgroundColor: Colors.blue[800],
+            backgroundColor: Theme.of(context).primaryColor,
           ),
           BottomNavigationBarItem(
             icon: const Icon(Icons.person),
             label: _getAppBarTitle(3),
-            backgroundColor: Colors.blue[800],
+            backgroundColor: Theme.of(context).primaryColor,
           ),
         ],
       ),

@@ -26,22 +26,22 @@ class MainButtonBlue extends StatelessWidget {
             ? Icon(icon)
             : ImageIcon(AssetImage(iconImage!), size: 24),
         onPressed: onTap,
-        style: _buttonStyle(),
+        style: _buttonStyle(context),
         label: Text(buttonText),
       );
     } else {
       // Text-only button
       return ElevatedButton(
         onPressed: onTap,
-        style: _buttonStyle(),
+        style: _buttonStyle(context),
         child: Text(buttonText),
       );
     }
   }
 
-  ButtonStyle _buttonStyle() {
+  ButtonStyle _buttonStyle(BuildContext context) {
     return ElevatedButton.styleFrom(
-      backgroundColor: Colors.blue[800],
+      backgroundColor: Theme.of(context).primaryColor,
       foregroundColor: Colors.white,
     );
   }

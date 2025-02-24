@@ -153,7 +153,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
             width: double.infinity,
             height: 50,
             decoration: BoxDecoration(
-              color: Colors.blue[800],
+              color: Theme.of(context).primaryColor,
               borderRadius: const BorderRadius.only(
                 bottomLeft: Radius.circular(15),
                 bottomRight: Radius.circular(15),
