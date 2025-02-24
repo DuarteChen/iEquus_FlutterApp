@@ -14,9 +14,12 @@ class SmallImagePreview extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return SizedBox(
-      width: 100,
-      height: 100,
+    return Container(
+      decoration: BoxDecoration(
+        border: Border.all(color: Colors.black),
+        borderRadius: BorderRadius.circular(12),
+      ),
+      clipBehavior: Clip.hardEdge,
       child: Stack(
         fit: StackFit.expand,
         children: [
@@ -34,16 +37,19 @@ class SmallImagePreview extends StatelessWidget {
               width: double.infinity,
               height: double.infinity,
             ),
-          // Edit Photo Button
           Positioned(
-            bottom: 2,
-            right: 2,
-            child: IconButton(
-              icon: Icon(
-                Icons.edit,
-                color: Theme.of(context).primaryColor,
+            bottom: 8,
+            right: 8,
+            child: CircleAvatar(
+              backgroundColor: Colors.black54,
+              child: IconButton(
+                icon: const Icon(
+                  Icons.edit,
+                  color: Colors.white,
+                  size: 20,
+                ),
+                onPressed: onEditPressed,
               ),
-              onPressed: onEditPressed,
             ),
           ),
         ],

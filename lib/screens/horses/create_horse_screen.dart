@@ -137,38 +137,43 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      body: SingleChildScrollView(
-        child: Column(
-          children: [
-            ProfileImagePreview(
-              profileImageFile: _profilePictureFile,
-              onEditPressed: () => pickImage((newImage) {
+      body: Column(
+        children: [
+          // Profile Image
+          ProfileImagePreview(
+            profileImageFile: _profilePictureFile,
+            onEditPressed: () => pickImage((newImage) {
+              setState(() {
                 _profilePictureFile = newImage;
-              }),
-            ),
-            Container(
-              width: double.infinity,
-              height: 50,
-              decoration: BoxDecoration(
-                color: Colors.blue[800],
-                borderRadius: const BorderRadius.only(
-                  bottomLeft: Radius.circular(15),
-                  bottomRight: Radius.circular(15),
-                ),
-              ),
-              child: const Center(
-                child: Text(
-                  'Create a new Horse',
-                  style: TextStyle(color: Colors.white, fontSize: 22),
-                ),
+              });
+            }),
+          ),
+          // Title Bar
+          Container(
+            width: double.infinity,
+            height: 50,
+            decoration: BoxDecoration(
+              color: Colors.blue[800],
+              borderRadius: const BorderRadius.only(
+                bottomLeft: Radius.circular(15),
+                bottomRight: Radius.circular(15),
               ),
             ),
-            // Form
-            Padding(
+            child: const Center(
+              child: Text(
+                'Create a new Horse',
+                style: TextStyle(color: Colors.white, fontSize: 22),
+              ),
+            ),
+          ),
+          // Main content takes the remaining space
+          Expanded(
+            child: Padding(
               padding: const EdgeInsets.all(16.0),
               child: Form(
                 key: _formKey,
                 child: Column(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
                     TextFormField(
@@ -187,7 +192,6 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                       },
                     ),
                     const SizedBox(height: 16),
-                    // Date Picker
                     InkWell(
                       onTap: () => _selectDate(context),
                       child: InputDecorator(
@@ -206,54 +210,93 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                       ),
                     ),
                     const SizedBox(height: 16),
-                    // Castanhas Images
-
-                    Row(
-                      children: [
-                        SmallImagePreview(
-                          profileImageFile: _pictureLeftFrontFile,
-                          onEditPressed: () => pickImage((newImage) {
-                            _pictureLeftFrontFile = newImage;
-                          }),
+                    Center(
+                      child: const Text(
+                        'Horse leg identification',
+                        style: TextStyle(
+                          fontSize: 22,
                         ),
-                        const SizedBox(width: 16),
-                        SmallImagePreview(
-                          profileImageFile: _pictureRightFrontFile,
-                          onEditPressed: () => pickImage((newImage) {
-                            _pictureRightFrontFile = newImage;
-                          }),
-                        ),
-                      ],
+                      ),
                     ),
-
-                    const SizedBox(height: 16),
+                    const SizedBox(height: 8),
+                    // Image rows
                     Row(
-                      children: [
-                        SmallImagePreview(
-                          profileImageFile: _pictureLeftHindFile,
-                          onEditPressed: () => pickImage((newImage) {
-                            _pictureLeftHindFile = newImage;
-                          }),
-                        ),
-                        const SizedBox(width: 16),
-                        SmallImagePreview(
-                          profileImageFile: _pictureRightHindFile,
-                          onEditPressed: () => pickImage((newImage) {
-                            _pictureRightHindFile = newImage;
-                          }),
-                        ),
-                      ],
+                      children: [Text("Left"), Text("Right")],
+                    ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Transform.rotate(
+                            angle: -90 *
+                                3.14159 /
+                                180, // Convert 90 degrees to radians
+                            child: Text('Front'),
+                          ),
+                          Expanded(
+                            child: SmallImagePreview(
+                              profileImageFile: _pictureLeftFrontFile,
+                              onEditPressed: () => pickImage((newImage) {
+                                setState(() {
+                                  _pictureLeftFrontFile = newImage;
+                                });
+                              }),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: SmallImagePreview(
+                              profileImageFile: _pictureRightFrontFile,
+                              onEditPressed: () => pickImage((newImage) {
+                                setState(() {
+                                  _pictureRightFrontFile = newImage;
+                                });
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 16),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Transform.rotate(
+                            angle: -90 * 3.14159 / 180,
+                            child: Text('Hind'),
+                          ),
+                          Expanded(
+                            child: SmallImagePreview(
+                              profileImageFile: _pictureLeftHindFile,
+                              onEditPressed: () => pickImage((newImage) {
+                                setState(() {
+                                  _pictureLeftHindFile = newImage;
+                                });
+                              }),
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          Expanded(
+                            child: SmallImagePreview(
+                              profileImageFile: _pictureRightHindFile,
+                              onEditPressed: () => pickImage((newImage) {
+                                setState(() {
+                                  _pictureRightHindFile = newImage;
+                                });
+                              }),
+                            ),
+                          ),
+                        ],
+                      ),
                     ),
                   ],
                 ),
               ),
             ),
-            const SizedBox(height: 16), // Optional space before the button
-          ],
-        ),
+          ),
+        ],
       ),
       bottomNavigationBar: Padding(
-        padding: const EdgeInsets.all(16.0),
+        padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
         child: SizedBox(
           width: double.infinity,
           child: MainButtonBlue(
@@ -265,181 +308,3 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
     );
   }
 }
-
-/*import 'dart:io';
-import 'package:equus/widgets/camera_or_gallery_buttons.dart';
-import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import 'package:equus/models/horse.dart';
-import 'package:image_picker/image_picker.dart';
-
-class CreateHorseScreen extends StatefulWidget {
-  const CreateHorseScreen({super.key});
-
-  @override
-  State<CreateHorseScreen> createState() {
-    return _CreateHorseScreenState();
-  }
-}
-
-class _CreateHorseScreenState extends State<CreateHorseScreen> {
-  final _formKey = GlobalKey<FormState>();
-  final _nameController = TextEditingController();
-  final _birthDateController = TextEditingController();
-
-  File? _profilePictureFile;
-  File? _pictureRightFrontFile;
-  File? _pictureLeftFrontFile;
-  File? _pictureRightHindFile;
-  File? _pictureLeftHindFile;
-
-  void pickImage(ImageSource source, String picType) async {
-    final imagePicker = ImagePicker();
-    final pickedImage = await imagePicker.pickImage(source: source);
-
-    if (pickedImage != null) {
-      if (picType == 'profile') {
-        setState(() {
-          _profilePictureFile = File(pickedImage.path);
-        });
-      } else if (picType == 'pictureRightFront') {
-        setState(() {
-          _pictureRightFrontFile = File(pickedImage.path);
-        });
-      }
-    }
-  }
-
-  Future<void> _saveHorse() async {
-    if (_formKey.currentState!.validate()) {
-      //Cria um objeto da classe Horse
-      final horse = Horse(
-        idHorse:
-            0, //só para criar o objeto, porque o id vai sempre vir da base dade dados
-        name: _nameController.text,
-        birthDate: _birthDateController.text,
-      );
-      //Define o tipo de request para a variável
-      var request = http.MultipartRequest(
-          'POST', Uri.parse('http://10.0.2.2:9090/horses'));
-
-      request.fields['name'] = horse.name;
-      request.fields['birthDate'] = horse.birthDate!;
-
-      if (_profilePictureFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'photo', // This key should match your API expectation
-            _profilePictureFile!.path,
-          ),
-        );
-      }
-
-      if (_pictureRightFrontFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'pictureRightFrontPath',
-            _pictureRightFrontFile!.path,
-          ),
-        );
-      }
-
-      var response = await request.send();
-
-      if (response.statusCode == 201) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Horse created successfully!')),
-        );
-        Navigator.pop(context);
-      } else {
-        ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create horse')),
-        );
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    ImageSource pictureSource = ImageSource.camera;
-    String pictureType = "profile";
-
-    Widget profilepictureButtonorplaceholder = CameraOrGalleryButtons(
-      picType: pictureType,
-      setImageToVariable: pickImage,
-      source: pictureSource,
-    );
-
-    if (_profilePictureFile != null) {
-      profilepictureButtonorplaceholder =
-          Image.file(_profilePictureFile!, fit: BoxFit.cover);
-    }
-
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Create New Horse"),
-      ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              TextFormField(
-                controller: _nameController,
-                decoration: InputDecoration(
-                  labelText: "Horse Name",
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter the horse's name";
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-              TextFormField(
-                controller: _birthDateController,
-                decoration: InputDecoration(
-                  labelText: "Birth Date",
-                  border: OutlineInputBorder(),
-                ),
-                validator: (value) {
-                  if (value == null || value.isEmpty) {
-                    return "Please enter the birth date";
-                  }
-                  return null;
-                },
-              ),
-              SizedBox(height: 16),
-
-              //Profile Picture
-              Container(
-                height: 250,
-                width: double.infinity,
-                alignment: Alignment.center,
-                child: Column(
-                  children: [
-                    Text("Profile Picture"),
-                    profilepictureButtonorplaceholder,
-                  ],
-                ),
-              ),
-
-              SizedBox(height: 20),
-              ElevatedButton(
-                onPressed: _saveHorse,
-                style: ElevatedButton.styleFrom(
-                  padding: EdgeInsets.symmetric(vertical: 14),
-                ),
-                child: Text("Save Horse"),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
-*/
