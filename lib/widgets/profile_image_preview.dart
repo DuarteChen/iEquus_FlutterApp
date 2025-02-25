@@ -1,14 +1,12 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
 
 class ProfileImagePreview extends StatelessWidget {
-  final File? profileImageFile;
-
+  final ImageProvider<Object>? profileImageProvider; // Changed to ImageProvider
   final VoidCallback onEditPressed;
 
   const ProfileImagePreview({
     super.key,
-    required this.profileImageFile,
+    this.profileImageProvider, // Make it nullable and use the provider
     required this.onEditPressed,
   });
 
@@ -19,25 +17,22 @@ class ProfileImagePreview extends StatelessWidget {
       height: MediaQuery.of(context).size.height / 4,
       child: Stack(
         children: [
-          // If there's no image, display text
-          if (profileImageFile == null)
-            Padding(
-              padding: const EdgeInsets.all(16),
-              child: Center(
-                child: Image.asset(
-                  'assets/images/horse_empty_profile_image.png', // Ensure the path is correct
-                  fit: BoxFit.cover,
-                ),
-              ),
-            )
-          else
-            // Display image if available
-            Image.file(
-              profileImageFile!,
-              fit: BoxFit.cover,
-              width: double.infinity,
-              height: double.infinity,
-            ),
+          // Display image using ImageProvider
+          Center(
+            child: profileImageProvider != null
+                ? Image(
+                    // Use Image widget to display ImageProvider
+                    image: profileImageProvider!,
+                    fit: BoxFit.cover,
+                    width: double.infinity,
+                    height: double.infinity,
+                  )
+                : Image.asset(
+                    // Fallback to asset if no provider (though unlikely now)
+                    'assets/images/horse_empty_profile_image.png',
+                    fit: BoxFit.cover,
+                  ),
+          ),
 
           // Back arrow icon
           Positioned(

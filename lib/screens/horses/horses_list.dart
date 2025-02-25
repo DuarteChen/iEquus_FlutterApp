@@ -1,4 +1,5 @@
 import 'package:equus/models/horse.dart';
+import 'package:equus/screens/horses/horse_profile.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
 import 'dart:convert';
@@ -70,7 +71,13 @@ class _HorsesListState extends State<HorsesList> {
                         : 'No birth date',
                   ),
                   onTap: () {
-                    // TODO - Ecrã de detalhes do cavalo
+                    Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                          builder: (context) => HorseProfile(
+                                horse: horse,
+                              )),
+                    );
                   },
                 ));
               },

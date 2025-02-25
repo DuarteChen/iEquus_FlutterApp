@@ -20,22 +20,31 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   DateTime? _selectedDate;
-  //Profile Picture
+
+  // ImageProviders for previews
+  ImageProvider<Object>? _profileImageProvider;
+  ImageProvider<Object>? _pictureRightFrontProvider;
+  ImageProvider<Object>? _pictureLeftFrontProvider;
+  ImageProvider<Object>? _pictureRightHindProvider;
+  ImageProvider<Object>? _pictureLeftHindProvider;
+
+  // Files to store the picked image files for upload
   File? _profilePictureFile;
-  //Castanha do cavalo
   File? _pictureRightFrontFile;
   File? _pictureLeftFrontFile;
   File? _pictureRightHindFile;
   File? _pictureLeftHindFile;
 
   //esta função recebe uma função que atualiza que corre dentro desta função ;)
-  Future<void> pickImage(Function(File) updateImage) async {
+  Future<void> pickImage(Function(File, ImageProvider<Object>) updateImageProvider) async {
     final imagePicker = ImagePicker();
     final pickedImage = await imagePicker.pickImage(source: ImageSource.camera);
 
     if (pickedImage != null) {
+      File imageFile = File(pickedImage.path);
+      ImageProvider<Object> imageProvider = FileImage(imageFile); // Create ImageProvider
       setState(() {
-        updateImage(File(pickedImage.path));
+        updateImageProvider(imageFile, imageProvider); // Call update function with both File and ImageProvider
       });
     }
   }
@@ -59,12 +68,11 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
     if (_formKey.currentState!.validate()) {
       //Cria um objeto da classe Horse
       final horse = Horse(
-        idHorse:
-            0, //só para criar o objeto, porque o id vai sempre vir da base dade dados
+        idHorse: 0,
         name: _nameController.text,
         birthDate: _selectedDate,
       );
-      //Define o tipo de request para a variável
+
       var request = http.MultipartRequest(
           'POST', Uri.parse('http://10.0.2.2:9090/horses'));
 
@@ -73,7 +81,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
         request.fields['birthDate'] =
             '${horse.birthDate!.year}-${horse.birthDate!.month.toString().padLeft(2, '0')}-${horse.birthDate!.day.toString().padLeft(2, '0')}';
       }
-      //Profile Pic
+
       if (_profilePictureFile != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -82,7 +90,6 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
           ),
         );
       }
-      //Hinds Pics
       if (_pictureLeftFrontFile != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -91,7 +98,6 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
           ),
         );
       }
-
       if (_pictureRightFrontFile != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -100,7 +106,6 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
           ),
         );
       }
-
       if (_pictureLeftHindFile != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -109,7 +114,6 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
           ),
         );
       }
-
       if (_pictureRightHindFile != null) {
         request.files.add(
           await http.MultipartFile.fromPath(
@@ -141,10 +145,11 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
         children: [
           // Profile Image
           ProfileImagePreview(
-            profileImageFile: _profilePictureFile,
-            onEditPressed: () => pickImage((newImage) {
+            profileImageProvider: _profileImageProvider, 
+            onEditPressed: () => pickImage((updatedFile, updatedProvider) {
               setState(() {
-                _profilePictureFile = newImage;
+                _profilePictureFile = updatedFile;
+                _profileImageProvider = updatedProvider;
               });
             }),
           ),
@@ -220,22 +225,20 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                     ),
                     const SizedBox(height: 8),
                     // Image rows
-
                     Expanded(
                       child: Row(
                         children: [
                           Transform.rotate(
-                            angle: -90 *
-                                3.14159 /
-                                180, // Convert 90 degrees to radians
-                            child: Text('Front'),
+                            angle: -90 * 3.14159 / 180,
+                            child: const Text('Front'),
                           ),
                           Expanded(
                             child: SmallImagePreview(
-                              profileImageFile: _pictureLeftFrontFile,
-                              onEditPressed: () => pickImage((newImage) {
+                              profileImageProvider: _pictureLeftFrontProvider, // Use ImageProvider
+                              onEditPressed: () => pickImage((updatedFile, updatedProvider) { // Update pickImage to receive ImageProvider
                                 setState(() {
-                                  _pictureLeftFrontFile = newImage;
+                                  _pictureLeftFrontFile = updatedFile;
+                                  _pictureLeftFrontProvider = updatedProvider;
                                 });
                               }),
                               emptyLegImage:
@@ -245,10 +248,11 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: SmallImagePreview(
-                              profileImageFile: _pictureRightFrontFile,
-                              onEditPressed: () => pickImage((newImage) {
+                              profileImageProvider: _pictureRightFrontProvider, // Use ImageProvider
+                              onEditPressed: () => pickImage((updatedFile, updatedProvider) { // Update pickImage to receive ImageProvider
                                 setState(() {
-                                  _pictureRightFrontFile = newImage;
+                                  _pictureRightFrontFile = updatedFile;
+                                  _pictureRightFrontProvider = updatedProvider;
                                 });
                               }),
                               emptyLegImage:
@@ -264,14 +268,15 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                         children: [
                           Transform.rotate(
                             angle: -90 * 3.14159 / 180,
-                            child: Text('Hind'),
+                            child: const Text('Hind'),
                           ),
                           Expanded(
                             child: SmallImagePreview(
-                              profileImageFile: _pictureLeftHindFile,
-                              onEditPressed: () => pickImage((newImage) {
+                              profileImageProvider: _pictureLeftHindProvider, // Use ImageProvider
+                              onEditPressed: () => pickImage((updatedFile, updatedProvider) { // Update pickImage to receive ImageProvider
                                 setState(() {
-                                  _pictureLeftHindFile = newImage;
+                                  _pictureLeftHindFile = updatedFile;
+                                  _pictureLeftHindProvider = updatedProvider;
                                 });
                               }),
                               emptyLegImage:
@@ -281,10 +286,11 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: SmallImagePreview(
-                              profileImageFile: _pictureRightHindFile,
-                              onEditPressed: () => pickImage((newImage) {
+                              profileImageProvider: _pictureRightHindProvider, // Use ImageProvider
+                              onEditPressed: () => pickImage((updatedFile, updatedProvider) { // Update pickImage to receive ImageProvider
                                 setState(() {
-                                  _pictureRightHindFile = newImage;
+                                  _pictureRightHindFile = updatedFile;
+                                  _pictureRightHindProvider = updatedProvider;
                                 });
                               }),
                               emptyLegImage:

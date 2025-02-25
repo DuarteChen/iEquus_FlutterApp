@@ -2,14 +2,13 @@ import 'package:flutter/material.dart';
 import 'dart:io';
 
 class SmallImagePreview extends StatelessWidget {
-  final File? profileImageFile;
-
+  final ImageProvider<Object>? profileImageProvider; // Changed to ImageProvider
   final VoidCallback onEditPressed;
   final String emptyLegImage;
 
   const SmallImagePreview({
     super.key,
-    required this.profileImageFile,
+    this.profileImageProvider, // Changed to ImageProvider
     required this.onEditPressed,
     required this.emptyLegImage,
   });
@@ -25,7 +24,8 @@ class SmallImagePreview extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (profileImageFile == null)
+          if (profileImageProvider ==
+              null) // Check for ImageProvider being null
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Center(
@@ -35,8 +35,9 @@ class SmallImagePreview extends StatelessWidget {
               )),
             )
           else
-            Image.file(
-              profileImageFile!,
+            Image(
+              // Use Image Widget to display ImageProvider
+              image: profileImageProvider!,
               fit: BoxFit.cover,
               width: double.infinity,
               height: double.infinity,
