@@ -23,7 +23,13 @@ class _HorsesListState extends State<HorsesList> {
     futureHorses = _fetchHorses();
   }
 
-  // Refresh function when user pulls down to refresh
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    _refreshHorses(); // Refresh horses when dependencies change (e.g., screen becomes visible again)
+  }
+
+  // Refresh function when user pulls down to refresh and when screen becomes visible
   Future<void> _refreshHorses() async {
     setState(() {
       futureHorses = _fetchHorses(); // Reload the list by fetching horses again
@@ -62,7 +68,7 @@ class _HorsesListState extends State<HorsesList> {
                     child: ListTile(
                   leading: horse.profilePicturePath != null
                       ? Image.network(horse.profilePicturePath!)
-                      : Icon(Icons.image_not_supported),
+                      : const Icon(Icons.image_not_supported),
                   title: Text(horse.name),
                   subtitle: Text(
                     horse.birthDate != null
@@ -83,7 +89,7 @@ class _HorsesListState extends State<HorsesList> {
               },
             );
           } else {
-            return Center(child: Text('Nenhum cavalo encontrado.'));
+            return const Center(child: Text('Nenhum cavalo encontrado.'));
           }
         },
       ),

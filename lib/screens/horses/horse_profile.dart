@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'dart:ui';
 import 'package:http/http.dart' as http;
 import 'package:equus/models/horse.dart'; // Assuming this is your Horse model
 import 'package:equus/widgets/profile_image_preview.dart'; // Assuming this is where ProfileImagePreview is
@@ -24,7 +25,6 @@ class HorseProfileState extends State<HorseProfile> {
     _loadImageProvider();
   }
 
-  // Load the initial image provider (network or placeholder)
   void _loadImageProvider() {
     if (widget.horse.profilePicturePath != null &&
         widget.horse.profilePicturePath!.isNotEmpty) {
@@ -33,21 +33,22 @@ class HorseProfileState extends State<HorseProfile> {
   }
 
   // This function receives a function that updates the image, and runs inside this function ;)
-  Future<void> pickImage(Function(File) updateImage) async {
+  Future<void> pickImage() async {
     final imagePicker = ImagePicker();
     final pickedImage = await imagePicker.pickImage(source: ImageSource.camera);
 
     if (pickedImage != null) {
       File imageFile = File(pickedImage.path);
-      setState(() {
-        _profilePictureFile = imageFile;
-        _profileImageProvider = FileImage(_profilePictureFile!);
-      });
-      updateImage(imageFile);
+
+      _profilePictureFile = imageFile;
+
+      await _updateHorsePhoto();
     }
   }
 
-  Future<void> _updateHorsePhoto(Horse horse) async {
+  Future<void> _updateHorsePhoto() async {
+    Horse horse = widget.horse;
+
     var request = http.MultipartRequest(
         'PUT', Uri.parse('http://10.0.2.2:9090/horses/${horse.idHorse}'));
 
@@ -65,7 +66,10 @@ class HorseProfileState extends State<HorseProfile> {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Horse updated successfully!')),
       );
-      Navigator.pop(context);
+
+      setState(() {
+        _profileImageProvider = FileImage(_profilePictureFile!);
+      });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Failed to update horse')),
@@ -82,15 +86,9 @@ class HorseProfileState extends State<HorseProfile> {
         children: [
           ProfileImagePreview(
             profileImageProvider: _profileImageProvider,
-            onEditPressed: () => pickImage((newImage) {
-              setState(() {
-                _profilePictureFile = newImage;
-                _profileImageProvider = FileImage(_profilePictureFile!);
-                _updateHorsePhoto(widget.horse);
-              });
-            }),
+            onEditPressed: () => pickImage(),
           ),
-          // Title Bar
+          // Title Bar ------------------------------------------
           Container(
             width: double.infinity,
             height: 50,
