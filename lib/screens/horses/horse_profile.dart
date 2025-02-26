@@ -1,5 +1,6 @@
+import 'dart:convert';
 import 'dart:io';
-import 'dart:ui';
+import 'package:equus/models/client.dart';
 import 'package:http/http.dart' as http;
 import 'package:equus/models/horse.dart'; // Assuming this is your Horse model
 import 'package:equus/widgets/profile_image_preview.dart'; // Assuming this is where ProfileImagePreview is
@@ -18,11 +19,19 @@ class HorseProfile extends StatefulWidget {
 class HorseProfileState extends State<HorseProfile> {
   File? _profilePictureFile;
   ImageProvider<Object>? _profileImageProvider;
+  List<Client> horseClients = [];
+  Client _horseOwner = Client(idHuman: 0, name: "vazio", isOwner: true);
+  late Future<void> _initializationFuture; // Future for all initState tasks
 
   @override
   void initState() {
     super.initState();
+    _initializationFuture = _initializeScreen();
+  }
+
+  Future<void> _initializeScreen() async {
     _loadImageProvider();
+    await _fetchHorseClients();
   }
 
   void _loadImageProvider() {
@@ -32,7 +41,41 @@ class HorseProfileState extends State<HorseProfile> {
     }
   }
 
-  // This function receives a function that updates the image, and runs inside this function ;)
+  // Fetch clients from the server - Modified to return Future<void>
+  Future<void> _fetchHorseClients() async {
+    final response = await http.get(Uri.parse(
+        'http://10.0.2.2:9090/horse/${widget.horse.idHorse}/clients'));
+
+    if (response.statusCode == 200) {
+      final List<dynamic> clientsJson = json.decode(response.body);
+      setState(() {
+        horseClients = clientsJson
+            .map((json) => Client.fromJson(json))
+            .toList()
+            .cast<Client>();
+
+        for (var client in horseClients) {
+          if (client.isOwner) {
+            _horseOwner = client;
+          }
+        }
+      });
+
+      print(
+          'Successfully loaded ${horseClients.length} clients for horse ${widget.horse.name}'); // Success log
+    } else {
+      print(
+          'Failed to load horse clients. Status code: ${response.statusCode}'); // Error log
+      setState(() {
+        horseClients = [];
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        // Inform user with SnackBar
+        const SnackBar(content: Text('Failed to load clients for this horse.')),
+      );
+    }
+  }
+
   Future<void> pickImage() async {
     final imagePicker = ImagePicker();
     final pickedImage = await imagePicker.pickImage(source: ImageSource.camera);
@@ -79,47 +122,115 @@ class HorseProfileState extends State<HorseProfile> {
 
   @override
   Widget build(BuildContext context) {
-    final String horseName = widget.horse.name;
-
-    return Scaffold(
-      body: Column(
-        children: [
-          ProfileImagePreview(
-            profileImageProvider: _profileImageProvider,
-            onEditPressed: () => pickImage(),
-          ),
-          // Title Bar ------------------------------------------
-          Container(
-            width: double.infinity,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(15),
-                bottomRight: Radius.circular(15),
-              ),
+    return FutureBuilder<void>(
+      future: _initializationFuture, // Use the combined initialization Future
+      builder: (context, snapshot) {
+        if (snapshot.connectionState == ConnectionState.waiting) {
+          // Show loading indicator for the entire screen
+          return const Scaffold(
+            body: Center(
+              child: CircularProgressIndicator(),
             ),
-            child: Center(
-              child: Text(
-                horseName,
-                style: const TextStyle(color: Colors.white, fontSize: 22),
-              ),
+          );
+        } else if (snapshot.hasError) {
+          // Show error screen for the entire screen if initialization fails
+          return Scaffold(
+            body: Center(
+              child:
+                  Text('Error initializing Horse Profile: ${snapshot.error}'),
             ),
-          ),
-
-          Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
+          );
+        } else {
+          // Initialization complete, build the full HorseProfile UI
+          return Scaffold(
+            body: Column(
               children: [
-                Text('Horse ID: ${widget.horse.idHorse}',
-                    style: TextStyle(fontSize: 16)),
-                SizedBox(height: 8),
+                ProfileImagePreview(
+                  profileImageProvider: _profileImageProvider,
+                  onEditPressed: () => pickImage(),
+                ),
+                // Title Bar ------------------------------------------
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(15),
+                      bottomRight: Radius.circular(15),
+                    ),
+                  ),
+                  child: Center(
+                    child: Text(
+                      widget.horse.name,
+                      style: const TextStyle(color: Colors.white, fontSize: 22),
+                    ),
+                  ),
+                ),
+
+                Padding(
+                  padding: const EdgeInsets.all(16.0),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      TextButton(
+                        child: Row(
+                          children: [
+                            Icon(
+                              Icons.person,
+                              color: Theme.of(context).primaryColor,
+                            ),
+                            SizedBox(width: 8),
+                            Text(
+                              _horseOwner.name,
+                              style: TextStyle(fontSize: 17),
+                            ),
+                          ],
+                        ),
+                        onPressed: () {},
+                      ),
+                      Text("Birth Date: ${widget.horse.birthDateToString()}"),
+                      Row(
+                        children: [
+                          Expanded(
+                            child: Column(
+                              children: [
+                                Container(
+                                  width: double.infinity,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                          width: 1, color: Colors.black)),
+                                ),
+                                Container(
+                                  width: double.infinity,
+                                  height: 50,
+                                  decoration: BoxDecoration(
+                                      border: Border.all(
+                                          width: 1, color: Colors.black)),
+                                )
+                              ],
+                            ),
+                          ),
+                          Expanded(
+                            child: Container(
+                              width: double.infinity,
+                              height: 100,
+                              decoration: BoxDecoration(
+                                  border: Border.all(
+                                      width: 1, color: Colors.black)),
+                            ),
+                          )
+                        ],
+                      )
+                    ],
+                  ),
+                ),
               ],
             ),
-          ),
-        ],
-      ),
+          );
+        }
+      },
     );
   }
 }

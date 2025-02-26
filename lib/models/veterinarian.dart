@@ -9,6 +9,7 @@ class Veterinarian extends Human {
     super.phoneNumber,
     super.phoneCountryCode,
     required this.idCedulaProfissional,
+    required super.idHuman,
   });
 
   @override

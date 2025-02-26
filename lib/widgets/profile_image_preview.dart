@@ -1,12 +1,12 @@
 import 'package:flutter/material.dart';
 
 class ProfileImagePreview extends StatelessWidget {
-  final ImageProvider<Object>? profileImageProvider; // Changed to ImageProvider
+  final ImageProvider<Object>? profileImageProvider;
   final VoidCallback onEditPressed;
 
   const ProfileImagePreview({
     super.key,
-    this.profileImageProvider, // Make it nullable and use the provider
+    this.profileImageProvider,
     required this.onEditPressed,
   });
 
@@ -28,7 +28,6 @@ class ProfileImagePreview extends StatelessWidget {
                     height: double.infinity,
                   )
                 : Image.asset(
-                    // Fallback to asset if no provider (though unlikely now)
                     'assets/images/horse_empty_profile_image.png',
                     fit: BoxFit.cover,
                   ),
@@ -38,23 +37,12 @@ class ProfileImagePreview extends StatelessWidget {
           Positioned(
             top: 30,
             left: 10,
-            child: Container(
-              decoration: BoxDecoration(
-                borderRadius: const BorderRadius.all(
-                  Radius.circular(100),
-                ),
-                border: Border.all(
-                  color: Theme.of(context).primaryColor,
-                  width: 1,
-                ),
+            child: IconButton(
+              icon: Icon(
+                Icons.arrow_back,
+                color: Theme.of(context).primaryColor,
               ),
-              child: IconButton(
-                icon: Icon(
-                  Icons.arrow_back_ios_new,
-                  color: Theme.of(context).primaryColor,
-                ),
-                onPressed: () => Navigator.pop(context),
-              ),
+              onPressed: () => Navigator.pop(context),
             ),
           ),
           // Edit Photo Button

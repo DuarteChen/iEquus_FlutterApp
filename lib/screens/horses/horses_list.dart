@@ -26,7 +26,7 @@ class _HorsesListState extends State<HorsesList> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    _refreshHorses(); // Refresh horses when dependencies change (e.g., screen becomes visible again)
+    _refreshHorses();
   }
 
   // Refresh function when user pulls down to refresh and when screen becomes visible
@@ -50,7 +50,7 @@ class _HorsesListState extends State<HorsesList> {
   @override
   Widget build(BuildContext context) {
     return RefreshIndicator(
-      onRefresh: _refreshHorses, // Called when user pulls down to refresh
+      onRefresh: _refreshHorses,
       child: FutureBuilder<List<Horse>>(
         future: futureHorses,
         builder: (context, snapshot) {
