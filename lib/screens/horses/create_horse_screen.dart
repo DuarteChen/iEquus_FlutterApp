@@ -36,15 +36,19 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
   File? _pictureLeftHindFile;
 
   //esta função recebe uma função que atualiza que corre dentro desta função ;)
-  Future<void> pickImage(Function(File, ImageProvider<Object>) updateImageProvider) async {
+  Future<void> pickImage(
+      Function(File, ImageProvider<Object>) updateImageProvider,
+      ImageSource source) async {
     final imagePicker = ImagePicker();
-    final pickedImage = await imagePicker.pickImage(source: ImageSource.camera);
+    final pickedImage = await imagePicker.pickImage(source: source);
 
     if (pickedImage != null) {
       File imageFile = File(pickedImage.path);
-      ImageProvider<Object> imageProvider = FileImage(imageFile); // Create ImageProvider
+      ImageProvider<Object> imageProvider =
+          FileImage(imageFile); // Create ImageProvider
       setState(() {
-        updateImageProvider(imageFile, imageProvider); // Call update function with both File and ImageProvider
+        updateImageProvider(imageFile,
+            imageProvider); // Call update function with both File and ImageProvider
       });
     }
   }
@@ -145,14 +149,16 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
         children: [
           // Profile Image
           ProfileImagePreview(
-            profileImageProvider: _profileImageProvider, 
-            onEditPressed: () => pickImage((updatedFile, updatedProvider) {
+            profileImageProvider: _profileImageProvider,
+            onImageSourceSelected: (source) =>
+                pickImage((updatedFile, updatedProvider) {
               setState(() {
                 _profilePictureFile = updatedFile;
                 _profileImageProvider = updatedProvider;
               });
-            }),
+            }, source),
           ),
+
           // Title Bar
           Container(
             width: double.infinity,
@@ -234,13 +240,16 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                           ),
                           Expanded(
                             child: SmallImagePreview(
-                              profileImageProvider: _pictureLeftFrontProvider, // Use ImageProvider
-                              onEditPressed: () => pickImage((updatedFile, updatedProvider) { // Update pickImage to receive ImageProvider
+                              profileImageProvider:
+                                  _pictureLeftFrontProvider, // Use ImageProvider
+                              onImageSourceSelected: (source) =>
+                                  pickImage((updatedFile, updatedProvider) {
+                                // Update pickImage to receive ImageProvider
                                 setState(() {
                                   _pictureLeftFrontFile = updatedFile;
                                   _pictureLeftFrontProvider = updatedProvider;
                                 });
-                              }),
+                              }, source),
                               emptyLegImage:
                                   'assets/images/front_left_leg_image.png',
                             ),
@@ -248,15 +257,18 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                           const SizedBox(width: 16),
                           Expanded(
                             child: SmallImagePreview(
-                              profileImageProvider: _pictureRightFrontProvider, // Use ImageProvider
-                              onEditPressed: () => pickImage((updatedFile, updatedProvider) { // Update pickImage to receive ImageProvider
+                              profileImageProvider:
+                                  _pictureRightFrontProvider, // Use ImageProvider
+                              onImageSourceSelected: (source) =>
+                                  pickImage((updatedFile, updatedProvider) {
+                                // Update pickImage to receive ImageProvider
                                 setState(() {
                                   _pictureRightFrontFile = updatedFile;
                                   _pictureRightFrontProvider = updatedProvider;
                                 });
-                              }),
+                              }, source),
                               emptyLegImage:
-                                  'assets/images/front_right_leg_image.png',
+                                  'assets/images/front_left_leg_image.png',
                             ),
                           ),
                         ],
@@ -272,29 +284,35 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                           ),
                           Expanded(
                             child: SmallImagePreview(
-                              profileImageProvider: _pictureLeftHindProvider, // Use ImageProvider
-                              onEditPressed: () => pickImage((updatedFile, updatedProvider) { // Update pickImage to receive ImageProvider
+                              profileImageProvider:
+                                  _pictureLeftHindProvider, // Use ImageProvider
+                              onImageSourceSelected: (source) =>
+                                  pickImage((updatedFile, updatedProvider) {
+                                // Update pickImage to receive ImageProvider
                                 setState(() {
                                   _pictureLeftHindFile = updatedFile;
                                   _pictureLeftHindProvider = updatedProvider;
                                 });
-                              }),
+                              }, source),
                               emptyLegImage:
-                                  'assets/images/hind_left_leg_image.png',
+                                  'assets/images/front_left_leg_image.png',
                             ),
                           ),
                           const SizedBox(width: 16),
                           Expanded(
                             child: SmallImagePreview(
-                              profileImageProvider: _pictureRightHindProvider, // Use ImageProvider
-                              onEditPressed: () => pickImage((updatedFile, updatedProvider) { // Update pickImage to receive ImageProvider
+                              profileImageProvider:
+                                  _pictureRightHindProvider, // Use ImageProvider
+                              onImageSourceSelected: (source) =>
+                                  pickImage((updatedFile, updatedProvider) {
+                                // Update pickImage to receive ImageProvider
                                 setState(() {
                                   _pictureRightHindFile = updatedFile;
                                   _pictureRightHindProvider = updatedProvider;
                                 });
-                              }),
+                              }, source),
                               emptyLegImage:
-                                  'assets/images/hind_right_leg_image.png',
+                                  'assets/images/front_left_leg_image.png',
                             ),
                           ),
                         ],

@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:equus/models/client.dart';
+import 'package:equus/widgets/main_button_blue.dart';
 import 'package:http/http.dart' as http;
 import 'package:equus/models/horse.dart'; // Assuming this is your Horse model
 import 'package:equus/widgets/profile_image_preview.dart'; // Assuming this is where ProfileImagePreview is
@@ -19,9 +20,10 @@ class HorseProfile extends StatefulWidget {
 class HorseProfileState extends State<HorseProfile> {
   File? _profilePictureFile;
   ImageProvider<Object>? _profileImageProvider;
-  List<Client> horseClients = [];
-  Client _horseOwner = Client(idHuman: 0, name: "vazio", isOwner: true);
-  late Future<void> _initializationFuture; // Future for all initState tasks
+  List<Client> _horseClients = [];
+  List<Client> _horseOwners = [];
+
+  late Future<void> _initializationFuture;
 
   @override
   void initState() {
@@ -49,42 +51,35 @@ class HorseProfileState extends State<HorseProfile> {
     if (response.statusCode == 200) {
       final List<dynamic> clientsJson = json.decode(response.body);
       setState(() {
-        horseClients = clientsJson
+        _horseClients = clientsJson
             .map((json) => Client.fromJson(json))
             .toList()
             .cast<Client>();
 
-        for (var client in horseClients) {
+        for (var client in List.from(_horseClients)) {
           if (client.isOwner) {
-            _horseOwner = client;
+            _horseOwners.add(client);
+            _horseClients.remove(client);
           }
         }
       });
-
-      print(
-          'Successfully loaded ${horseClients.length} clients for horse ${widget.horse.name}'); // Success log
     } else {
-      print(
-          'Failed to load horse clients. Status code: ${response.statusCode}'); // Error log
       setState(() {
-        horseClients = [];
+        _horseClients = [];
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        // Inform user with SnackBar
         const SnackBar(content: Text('Failed to load clients for this horse.')),
       );
     }
   }
 
-  Future<void> pickImage() async {
+  Future<void> pickImage(ImageSource source) async {
     final imagePicker = ImagePicker();
-    final pickedImage = await imagePicker.pickImage(source: ImageSource.camera);
+    final pickedImage = await imagePicker.pickImage(source: source);
 
     if (pickedImage != null) {
       File imageFile = File(pickedImage.path);
-
       _profilePictureFile = imageFile;
-
       await _updateHorsePhoto();
     }
   }
@@ -141,92 +136,189 @@ class HorseProfileState extends State<HorseProfile> {
             ),
           );
         } else {
-          // Initialization complete, build the full HorseProfile UI
           return Scaffold(
-            body: Column(
-              children: [
-                ProfileImagePreview(
-                  profileImageProvider: _profileImageProvider,
-                  onEditPressed: () => pickImage(),
-                ),
-                // Title Bar ------------------------------------------
-                Container(
-                  width: double.infinity,
-                  height: 50,
-                  decoration: BoxDecoration(
-                    color: Theme.of(context).primaryColor,
-                    borderRadius: const BorderRadius.only(
-                      bottomLeft: Radius.circular(15),
-                      bottomRight: Radius.circular(15),
+            body: Scrollbar(
+              interactive: true,
+              thumbVisibility: true,
+              thickness: 6,
+              radius: Radius.circular(8),
+              child: SingleChildScrollView(
+                child: Column(
+                  children: [
+                    ProfileImagePreview(
+                      profileImageProvider: _profileImageProvider,
+                      onImageSourceSelected: (source) =>
+                          pickImage(source), // Pass pickImage
                     ),
-                  ),
-                  child: Center(
-                    child: Text(
-                      widget.horse.name,
-                      style: const TextStyle(color: Colors.white, fontSize: 22),
-                    ),
-                  ),
-                ),
-
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      TextButton(
-                        child: Row(
-                          children: [
-                            Icon(
-                              Icons.person,
-                              color: Theme.of(context).primaryColor,
-                            ),
-                            SizedBox(width: 8),
-                            Text(
-                              _horseOwner.name,
-                              style: TextStyle(fontSize: 17),
-                            ),
-                          ],
+                    // Title Bar ------------------------------------------
+                    Container(
+                      width: double.infinity,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: Theme.of(context).primaryColor,
+                        borderRadius: const BorderRadius.only(
+                          bottomLeft: Radius.circular(15),
+                          bottomRight: Radius.circular(15),
                         ),
-                        onPressed: () {},
                       ),
-                      Text("Birth Date: ${widget.horse.birthDateToString()}"),
-                      Row(
+                      child: Center(
+                        child: Text(
+                          widget.horse.name,
+                          style: const TextStyle(
+                              color: Colors.white, fontSize: 22),
+                        ),
+                      ),
+                    ),
+                    //Horse Info ----------
+                    Padding(
+                      padding: const EdgeInsets.all(16.0),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Expanded(
-                            child: Column(
-                              children: [
-                                Container(
-                                  width: double.infinity,
-                                  height: 50,
+                          Text(
+                            'Owners',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Column(
+                            // Use Column instead of Wrap for ListTiles
+                            children: _horseOwners.map((client) {
+                              return ListTile(
+                                subtitle: Text("Owner"),
+                                leading: Container(
                                   decoration: BoxDecoration(
-                                      border: Border.all(
-                                          width: 1, color: Colors.black)),
+                                      shape: BoxShape.circle,
+                                      color: const Color.fromARGB(
+                                          255, 226, 226, 226)),
+                                  padding: EdgeInsets.all(7),
+                                  child: ClipOval(
+                                    child: Icon(
+                                      Icons.person,
+                                      color: Theme.of(context).primaryColor,
+                                    ),
+                                  ),
                                 ),
-                                Container(
-                                  width: double.infinity,
-                                  height: 50,
+                                title: Text(
+                                  client.name,
+                                  style: TextStyle(fontSize: 17),
+                                ),
+                                onTap: () {
+                                  // Add onTap functionality if needed for owners
+                                },
+                              );
+                            }).toList(),
+                          ),
+                          Column(
+                            children: _horseClients.map((client) {
+                              return ListTile(
+                                subtitle: Text("Care taker"),
+                                leading: Container(
                                   decoration: BoxDecoration(
-                                      border: Border.all(
-                                          width: 1, color: Colors.black)),
-                                )
-                              ],
+                                      shape: BoxShape.circle,
+                                      color: const Color.fromARGB(
+                                          255, 226, 226, 226)),
+                                  padding: EdgeInsets.all(7),
+                                  child: Icon(
+                                    Icons.person,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                                title: Text(
+                                  client.name,
+                                  style: TextStyle(fontSize: 17),
+                                ),
+                                onTap: () {},
+                              );
+                            }).toList(),
+                          ),
+                          Divider(
+                            color: Theme.of(context).primaryColor,
+                            thickness: 0.5,
+                            height: 32,
+                          ),
+                          Text(
+                            'Basic info',
+                            style: TextStyle(
+                                fontSize: 18, fontWeight: FontWeight.bold),
+                          ),
+                          Column(
+                            children: [
+                              ListTile(
+                                subtitle: Text("Birthday"),
+                                leading: Container(
+                                  decoration: BoxDecoration(
+                                      shape: BoxShape.circle,
+                                      color: const Color.fromARGB(
+                                          255, 226, 226, 226)),
+                                  padding: EdgeInsets.all(7),
+                                  child: Icon(
+                                    Icons.cake,
+                                    color: Theme.of(context).primaryColor,
+                                  ),
+                                ),
+                                title: Text(
+                                  "${widget.horse.dateName_birthDateToString()}",
+                                  style: TextStyle(fontSize: 17),
+                                ),
+                                onTap: () {},
+                              ),
+                              SizedBox(
+                                width: 8,
+                              ),
+                              Row(
+                                children: [
+                                  Expanded(
+                                    child: Column(
+                                      children: [
+                                        Container(
+                                          width: double.infinity,
+                                          height: 50,
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  width: 1,
+                                                  color: Colors.black)),
+                                        ),
+                                        Container(
+                                          width: double.infinity,
+                                          height: 50,
+                                          decoration: BoxDecoration(
+                                              border: Border.all(
+                                                  width: 1,
+                                                  color: Colors.black)),
+                                        )
+                                      ],
+                                    ),
+                                  ),
+                                  Expanded(
+                                    child: Container(
+                                      width: double.infinity,
+                                      height: 100,
+                                      decoration: BoxDecoration(
+                                        border: Border.all(
+                                            width: 1, color: Colors.black),
+                                      ),
+                                    ),
+                                  )
+                                ],
+                              ),
+                            ],
+                          ),
+                          SizedBox(
+                            height: 8,
+                          ),
+                          SizedBox(
+                            width: double.infinity,
+                            child: MainButtonBlue(
+                              buttonText: 'New Appointment',
+                              onTap: () {},
                             ),
                           ),
-                          Expanded(
-                            child: Container(
-                              width: double.infinity,
-                              height: 100,
-                              decoration: BoxDecoration(
-                                  border: Border.all(
-                                      width: 1, color: Colors.black)),
-                            ),
-                          )
                         ],
-                      )
-                    ],
-                  ),
+                      ),
+                    ),
+                  ],
                 ),
-              ],
+              ),
             ),
           );
         }

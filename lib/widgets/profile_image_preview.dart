@@ -1,13 +1,15 @@
 import 'package:flutter/material.dart';
+import 'package:image_picker/image_picker.dart';
 
 class ProfileImagePreview extends StatelessWidget {
   final ImageProvider<Object>? profileImageProvider;
-  final VoidCallback onEditPressed;
+  final Function(ImageSource)
+      onImageSourceSelected; // Change to accept ImageSource
 
   const ProfileImagePreview({
     super.key,
     this.profileImageProvider,
-    required this.onEditPressed,
+    required this.onImageSourceSelected,
   });
 
   @override
@@ -17,11 +19,9 @@ class ProfileImagePreview extends StatelessWidget {
       height: MediaQuery.of(context).size.height / 4,
       child: Stack(
         children: [
-          // Display image using ImageProvider
           Center(
             child: profileImageProvider != null
                 ? Image(
-                    // Use Image widget to display ImageProvider
                     image: profileImageProvider!,
                     fit: BoxFit.cover,
                     width: double.infinity,
@@ -32,8 +32,6 @@ class ProfileImagePreview extends StatelessWidget {
                     fit: BoxFit.cover,
                   ),
           ),
-
-          // Back arrow icon
           Positioned(
             top: 30,
             left: 10,
@@ -45,24 +43,60 @@ class ProfileImagePreview extends StatelessWidget {
               onPressed: () => Navigator.pop(context),
             ),
           ),
-          // Edit Photo Button
           Positioned(
             bottom: 10,
-            right: 10,
-            child: CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor,
-              child: IconButton(
-                icon: const Icon(
-                  Icons.edit,
-                  color: Colors.white,
-                  size: 20,
+            right: 18,
+            child: GestureDetector(
+              onTap: () {
+                _showImageSourceDialog(context);
+              },
+              child: Container(
+                padding: EdgeInsets.all(8),
+                decoration: BoxDecoration(
+                  color: Theme.of(context).primaryColor,
+                  borderRadius: BorderRadius.circular(360),
                 ),
-                onPressed: onEditPressed,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(Icons.edit, color: Colors.white, size: 20),
+                  ],
+                ),
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showImageSourceDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.photo_library),
+                title: Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  onImageSourceSelected(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text('Take a Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  onImageSourceSelected(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

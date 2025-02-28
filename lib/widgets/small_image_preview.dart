@@ -1,15 +1,16 @@
 import 'package:flutter/material.dart';
-import 'dart:io';
+import 'package:image_picker/image_picker.dart';
 
 class SmallImagePreview extends StatelessWidget {
-  final ImageProvider<Object>? profileImageProvider; // Changed to ImageProvider
-  final VoidCallback onEditPressed;
+  final ImageProvider<Object>? profileImageProvider;
+  final Function(ImageSource)
+      onImageSourceSelected; // Changed to accept ImageSource
   final String emptyLegImage;
 
   const SmallImagePreview({
     super.key,
-    this.profileImageProvider, // Changed to ImageProvider
-    required this.onEditPressed,
+    this.profileImageProvider,
+    required this.onImageSourceSelected,
     required this.emptyLegImage,
   });
 
@@ -24,19 +25,18 @@ class SmallImagePreview extends StatelessWidget {
       child: Stack(
         fit: StackFit.expand,
         children: [
-          if (profileImageProvider ==
-              null) // Check for ImageProvider being null
+          if (profileImageProvider == null)
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: Center(
-                  child: Image.asset(
-                emptyLegImage,
-                color: Theme.of(context).primaryColor,
-              )),
+                child: Image.asset(
+                  emptyLegImage,
+                  color: Theme.of(context).primaryColor,
+                ),
+              ),
             )
           else
             Image(
-              // Use Image Widget to display ImageProvider
               image: profileImageProvider!,
               fit: BoxFit.cover,
               width: double.infinity,
@@ -45,20 +45,51 @@ class SmallImagePreview extends StatelessWidget {
           Positioned(
             bottom: 8,
             right: 8,
-            child: CircleAvatar(
-              backgroundColor: Theme.of(context).primaryColor,
-              child: IconButton(
-                icon: const Icon(
+            child: GestureDetector(
+              onTap: () {
+                _showImageSourceDialog(context);
+              },
+              child: Container(
+                padding: EdgeInsets.all(8), // Adjusted padding
+                child: Icon(
                   Icons.edit,
-                  color: Colors.white,
-                  size: 20,
+                  color: Theme.of(context).primaryColor, // Adjusted icon size
                 ),
-                onPressed: onEditPressed,
               ),
             ),
           ),
         ],
       ),
+    );
+  }
+
+  void _showImageSourceDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.photo_library),
+                title: Text('Choose from Gallery'),
+                onTap: () {
+                  Navigator.pop(context);
+                  onImageSourceSelected(ImageSource.gallery);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text('Take a Photo'),
+                onTap: () {
+                  Navigator.pop(context);
+                  onImageSourceSelected(ImageSource.camera);
+                },
+              ),
+            ],
+          ),
+        );
+      },
     );
   }
 }

@@ -41,10 +41,19 @@ class Horse {
   // Custom function to format birthDate to String
   String? birthDateToString() {
     if (birthDate == null) {
-      return 'Unknown'; // Or return null, or any placeholder you prefer
+      return 'No birthday date'; // Or return null, or any placeholder you prefer
     } else {
       // Customize the date format here as you like
       final formatter = DateFormat('dd-MM-yyyy'); // Example: Day-Month-Year
+      return formatter.format(birthDate!);
+    }
+  }
+
+  String? dateName_birthDateToString() {
+    if (birthDate == null) {
+      return 'No birthday date';
+    } else {
+      final formatter = DateFormat('d MMMM, yyyy');
       return formatter.format(birthDate!);
     }
   }
