@@ -1,10 +1,11 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:equus/models/client.dart';
+import 'package:equus/screens/appointment/create_appointment.dart';
 import 'package:equus/widgets/main_button_blue.dart';
 import 'package:http/http.dart' as http;
-import 'package:equus/models/horse.dart'; // Assuming this is your Horse model
-import 'package:equus/widgets/profile_image_preview.dart'; // Assuming this is where ProfileImagePreview is
+import 'package:equus/models/horse.dart';
+import 'package:equus/widgets/profile_image_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
@@ -21,7 +22,7 @@ class HorseProfileState extends State<HorseProfile> {
   File? _profilePictureFile;
   ImageProvider<Object>? _profileImageProvider;
   List<Client> _horseClients = [];
-  List<Client> _horseOwners = [];
+  final List<Client> _horseOwners = [];
 
   late Future<void> _initializationFuture;
 
@@ -43,7 +44,6 @@ class HorseProfileState extends State<HorseProfile> {
     }
   }
 
-  // Fetch clients from the server - Modified to return Future<void>
   Future<void> _fetchHorseClients() async {
     final response = await http.get(Uri.parse(
         'http://10.0.2.2:9090/horse/${widget.horse.idHorse}/clients'));
@@ -310,7 +310,16 @@ class HorseProfileState extends State<HorseProfile> {
                             width: double.infinity,
                             child: MainButtonBlue(
                               buttonText: 'New Appointment',
-                              onTap: () {},
+                              onTap: () {
+                                Navigator.push(
+                                  context,
+                                  MaterialPageRoute(
+                                    builder: (context) => CreateAppointment(
+                                      horse: widget.horse,
+                                    ),
+                                  ),
+                                );
+                              },
                             ),
                           ),
                         ],

@@ -135,16 +135,18 @@ class _HorsesListState extends State<HorsesList> {
                             ? ClipOval(
                                 child: Image.network(
                                   horse.profilePicturePath!,
-                                  width: 40, // Adjust size as needed
-                                  height: 40, // Adjust size as needed
+                                  width: 40,
+                                  height: 40,
                                   fit: BoxFit.cover,
                                 ),
                               )
-                            : Image.asset(
-                                'assets/images/horse_empty_profile_image.png',
-                                width: 40, // Adjust size as needed
-                                height: 40, // Adjust size as needed
-                                fit: BoxFit.cover,
+                            : ClipOval(
+                                child: Image.asset(
+                                  'assets/images/horse_empty_profile_image.png',
+                                  width: 40,
+                                  height: 40,
+                                  fit: BoxFit.cover,
+                                ),
                               ),
                       ),
                       title: Text(horse.name),

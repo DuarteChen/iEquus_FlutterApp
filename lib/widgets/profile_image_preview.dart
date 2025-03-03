@@ -33,8 +33,8 @@ class ProfileImagePreview extends StatelessWidget {
                   ),
           ),
           Positioned(
-            top: 30,
-            left: 10,
+            top: 25,
+            left: 5,
             child: IconButton(
               icon: Icon(
                 Icons.arrow_back,
