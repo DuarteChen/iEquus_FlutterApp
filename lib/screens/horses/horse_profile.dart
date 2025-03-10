@@ -2,7 +2,6 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:equus/models/client.dart';
 import 'package:equus/screens/appointment/create_appointment.dart';
-import 'package:equus/screens/appointment/create_measure_screen.dart';
 import 'package:equus/widgets/main_button_blue.dart';
 import 'package:http/http.dart' as http;
 import 'package:equus/models/horse.dart';

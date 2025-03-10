@@ -9,7 +9,7 @@ import 'package:http/http.dart' as http;
 class HorseSelector extends StatefulWidget {
   final Horse? horse;
 
-  HorseSelector({super.key, this.horse});
+  const HorseSelector({super.key, this.horse});
 
   @override
   State<HorseSelector> createState() {
@@ -159,14 +159,14 @@ class _HorseSelectorState extends State<HorseSelector> {
                             : 'No birth date',
                       ),
                       onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) => CreateMeasureScreen(
-                              horse: horse,
-                            ),
-                          ),
-                        );
+                        // Navigator.push(
+                        //   context,
+                        //   MaterialPageRoute(
+                        //     builder: (context) => CreateMeasureScreen(
+                        //       horse: horse,
+                        //     ),
+                        //   ),
+                        // );
                       },
                     ),
                   );

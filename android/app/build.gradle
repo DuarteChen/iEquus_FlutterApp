@@ -6,9 +6,10 @@ plugins {
 }
 
 android {
-    namespace = "com.example.i_equus"
+    namespace = "com.duartechen.i_equus"
     compileSdk = flutter.compileSdkVersion
     ndkVersion = flutter.ndkVersion
+
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_1_8

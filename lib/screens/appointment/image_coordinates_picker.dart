@@ -6,16 +6,13 @@ import 'package:flutter/material.dart';
 
 class ImageCoordinatesPicker extends StatefulWidget {
   final File image;
-  final int imageWidth;
-  final int imageHeight;
   final List<Offset> coordinates;
   final Color color;
 
   const ImageCoordinatesPicker({
     super.key,
     required this.image,
-    required this.imageWidth,
-    required this.imageHeight,
+
     required this.coordinates,
     required this.color,
   });
@@ -27,6 +24,8 @@ class ImageCoordinatesPicker extends StatefulWidget {
 class _ImageCoordinatesPickerState extends State<ImageCoordinatesPicker> {
   final GlobalKey _imageKey = GlobalKey();
   File? _paintedImageFile;
+  int imageWidth = 0;
+  int imageHeight = 0;
 
   @override
   void initState() {
@@ -34,7 +33,14 @@ class _ImageCoordinatesPickerState extends State<ImageCoordinatesPicker> {
     _paintedImageFile = File(widget.image.path);
   }
 
-  void _addCoordinate(TapUpDetails details) {
+  Future<void> _addCoordinate(TapUpDetails details) async {
+    final image = await decodeImageFromList(widget.image.readAsBytesSync());
+
+
+      imageWidth = image.width;
+      imageHeight = image.height;
+
+
     final RenderBox renderBox =
         _imageKey.currentContext!.findRenderObject() as RenderBox;
     final Size displayedSize = renderBox.size;
@@ -42,8 +48,8 @@ class _ImageCoordinatesPickerState extends State<ImageCoordinatesPicker> {
     final Offset tapPosition = details.localPosition;
 
     // Escalar para coordenadas reais da imagem
-    final double scaleX = widget.imageWidth / displayedSize.width;
-    final double scaleY = widget.imageHeight / displayedSize.height;
+    final double scaleX = imageWidth / displayedSize.width;
+    final double scaleY = imageHeight / displayedSize.height;
 
     final double realX = tapPosition.dx * scaleX;
     final double realY = tapPosition.dy * scaleY;
@@ -128,18 +134,7 @@ class _ImageCoordinatesPickerState extends State<ImageCoordinatesPicker> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: const Text('Select the coordinates'),
-        actions: [
-          IconButton(
-            icon: const Icon(Icons.check),
-            onPressed: _finishSelection,
-          ),
-        ],
-      ),
-      body: Center(
-        child: GestureDetector(
+    return GestureDetector(
           onTapUp: _addCoordinate,
           child: Stack(
             children: [
@@ -152,15 +147,13 @@ class _ImageCoordinatesPickerState extends State<ImageCoordinatesPicker> {
                   painter: CoordinatesPainter(
                     widget.color,
                     coordinates: widget.coordinates,
-                    imageWidth: widget.imageWidth,
-                    imageHeight: widget.imageHeight,
+                    imageWidth: imageWidth,
+                    imageHeight: imageHeight,
                   ),
                 ),
               ),
             ],
           ),
-        ),
-      ),
-    );
+        );
   }
 }

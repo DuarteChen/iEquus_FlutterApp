@@ -1,10 +1,8 @@
 import 'dart:typed_data';
 import 'package:equus/models/horse.dart';
-import 'package:equus/screens/appointment/image_coordinates_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-
 
 class CreateMeasureScreen extends StatefulWidget {
   const CreateMeasureScreen(
@@ -23,7 +21,7 @@ class CreateMeasureScreen extends StatefulWidget {
 
 class CreateMeasureScreenState extends State<CreateMeasureScreen> {
   File? _selectedImage;
-  List<Offset> _coordinates = [];
+  final List<Offset> _coordinates = [];
   int? imageWidth;
   int? imageHeight;
 
@@ -40,61 +38,71 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       _selectedImage = File(pickedImage.path);
     });
 
-    final image = await decodeImageFromList(_selectedImage!.readAsBytesSync());
+    // Navigator.push(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (context) => SliderImageCoordinatesPicker(
+    //       coordinates: _coordinates,
+    //       selectedImage: _selectedImage,
+    //     ),
+    //   ),
+    // );
 
-    setState(() {
-      imageWidth = image.width;
-      imageHeight = image.height;
-    });
-
-    // Rosa escuro (coordenadas 0 e 1)
-    final colorCoordinatesRosaEscuro = Colors.purple[800]!;
-
-    final coordinatesRosaEscuro = await Navigator.push<List<Offset>>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ImageCoordinatesPicker(
-          image: _selectedImage!,
-          imageWidth: imageWidth!,
-          imageHeight: imageHeight!,
-          coordinates: List.of(_coordinates), // Passa uma cópia atual
-          color: colorCoordinatesRosaEscuro,
-        ),
-      ),
-    );
-
-    if (coordinatesRosaEscuro != null) {
-      setState(() {
-        _coordinates.addAll(coordinatesRosaEscuro);
-      });
-    }
-
-    // Rosa claro (coordenadas 2 e 3)
-    final colorCoordinatesRosaClaro = Colors.purple[300]!;
-
-    final coordinatesRosaClaro = await Navigator.push<List<Offset>>(
-      context,
-      MaterialPageRoute(
-        builder: (context) => ImageCoordinatesPicker(
-          image: _selectedImage!,
-          imageWidth: imageWidth!,
-          imageHeight: imageHeight!,
-          coordinates: List.of(_coordinates), // Inclui as coordenadas já adicionadas
-          color: colorCoordinatesRosaClaro,
-        ),
-      ),
-    );
-
-    if (coordinatesRosaClaro != null) {
-      setState(() {
-        _coordinates.addAll(coordinatesRosaClaro);
-      });
-    }
-
-    // Atualiza a imagem final com todas as coordenadas
-    setState(() {
-      _selectedImage = File(_selectedImage!.path); // Recarregar imagem final
-    });
+    // final image = await decodeImageFromList(_selectedImage!.readAsBytesSync());
+    //
+    // setState(() {
+    //   imageWidth = image.width;
+    //   imageHeight = image.height;
+    // });
+    //
+    // // Rosa escuro (coordenadas 0 e 1)
+    // final colorCoordinatesRosaEscuro = Colors.purple[800]!;
+    //
+    // final coordinatesRosaEscuro = await Navigator.push<List<Offset>>(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (context) => ImageCoordinatesPicker(
+    //       image: _selectedImage!,
+    //       imageWidth: imageWidth!,
+    //       imageHeight: imageHeight!,
+    //       coordinates: List.of(_coordinates), // Passa uma cópia atual
+    //       color: colorCoordinatesRosaEscuro,
+    //     ),
+    //   ),
+    // );
+    //
+    // if (coordinatesRosaEscuro != null) {
+    //   setState(() {
+    //     _coordinates.addAll(coordinatesRosaEscuro);
+    //   });
+    // }
+    //
+    // // Rosa claro (coordenadas 2 e 3)
+    // final colorCoordinatesRosaClaro = Colors.purple[300]!;
+    //
+    // final coordinatesRosaClaro = await Navigator.push<List<Offset>>(
+    //   context,
+    //   MaterialPageRoute(
+    //     builder: (context) => ImageCoordinatesPicker(
+    //       image: _selectedImage!,
+    //       imageWidth: imageWidth!,
+    //       imageHeight: imageHeight!,
+    //       coordinates: List.of(_coordinates), // Inclui as coordenadas já adicionadas
+    //       color: colorCoordinatesRosaClaro,
+    //     ),
+    //   ),
+    // );
+    //
+    // if (coordinatesRosaClaro != null) {
+    //   setState(() {
+    //     _coordinates.addAll(coordinatesRosaClaro);
+    //   });
+    // }
+    //
+    // // Atualiza a imagem final com todas as coordenadas
+    // setState(() {
+    //   _selectedImage = File(_selectedImage!.path); // Recarregar imagem final
+    // });
   }
 
   @override
@@ -135,6 +143,11 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       ),
       body: Column(children: [
         imageContent,
+        ElevatedButton.icon(
+          onPressed: () {},
+          icon: Icon(Icons.stream),
+          label: Text("Slider Screen"),
+        ),
       ]),
     );
   }
