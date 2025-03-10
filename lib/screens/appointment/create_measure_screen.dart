@@ -1,5 +1,6 @@
 import 'dart:typed_data';
 import 'package:equus/models/horse.dart';
+import 'package:equus/screens/appointment/slider_image_coordinates_picker.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -38,15 +39,19 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       _selectedImage = File(pickedImage.path);
     });
 
-    // Navigator.push(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => SliderImageCoordinatesPicker(
-    //       coordinates: _coordinates,
-    //       selectedImage: _selectedImage,
-    //     ),
-    //   ),
-    // );
+    Navigator.push(
+      context,
+      MaterialPageRoute(
+        builder: (context) => SliderImageCoordinatesPicker(
+          coordinates: _coordinates,
+          selectedImage: _selectedImage,
+        ),
+      ),
+    );
+
+    setState(() {
+      _selectedImage = File(pickedImage.path);
+    });
 
     // final image = await decodeImageFromList(_selectedImage!.readAsBytesSync());
     //

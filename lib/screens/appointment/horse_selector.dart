@@ -159,14 +159,14 @@ class _HorseSelectorState extends State<HorseSelector> {
                             : 'No birth date',
                       ),
                       onTap: () {
-                        // Navigator.push(
-                        //   context,
-                        //   MaterialPageRoute(
-                        //     builder: (context) => CreateMeasureScreen(
-                        //       horse: horse,
-                        //     ),
-                        //   ),
-                        // );
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                            builder: (context) => CreateMeasureScreen(
+                              horse: horse,
+                            ),
+                          ),
+                        );
                       },
                     ),
                   );
