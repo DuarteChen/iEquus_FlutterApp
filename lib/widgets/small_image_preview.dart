@@ -5,13 +5,13 @@ class SmallImagePreview extends StatelessWidget {
   final ImageProvider<Object>? profileImageProvider;
   final Function(ImageSource)
       onImageSourceSelected; // Changed to accept ImageSource
-  final String emptyLegImage;
+  final String emptyImage;
 
   const SmallImagePreview({
     super.key,
     this.profileImageProvider,
     required this.onImageSourceSelected,
-    required this.emptyLegImage,
+    required this.emptyImage,
   });
 
   @override
@@ -30,7 +30,7 @@ class SmallImagePreview extends StatelessWidget {
               padding: const EdgeInsets.all(8.0),
               child: Center(
                 child: Image.asset(
-                  emptyLegImage,
+                  emptyImage,
                   color: Theme.of(context).primaryColor,
                 ),
               ),

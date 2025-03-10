@@ -29,7 +29,7 @@ class Horse {
       profilePicturePath: json['profilePicturePath'],
       birthDate: json['birthDate'] != null
           ? DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
-              .parse(json['birthDate']) // Custom parsing
+              .parse(json['birthDate'])
           : null,
       pictureRightFrontPath: json['pictureRightFrontPath'],
       pictureLeftFrontPath: json['pictureLeftFrontPath'],
@@ -38,13 +38,11 @@ class Horse {
     );
   }
 
-  // Custom function to format birthDate to String
   String? birthDateToString() {
     if (birthDate == null) {
-      return 'No birthday date'; // Or return null, or any placeholder you prefer
+      return 'No birthday date';
     } else {
-      // Customize the date format here as you like
-      final formatter = DateFormat('dd-MM-yyyy'); // Example: Day-Month-Year
+      final formatter = DateFormat('dd-MM-yyyy');
       return formatter.format(birthDate!);
     }
   }

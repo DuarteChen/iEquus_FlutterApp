@@ -250,7 +250,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                   _pictureLeftFrontProvider = updatedProvider;
                                 });
                               }, source),
-                              emptyLegImage:
+                              emptyImage:
                                   'assets/images/front_left_leg_image.png',
                             ),
                           ),
@@ -267,7 +267,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                   _pictureRightFrontProvider = updatedProvider;
                                 });
                               }, source),
-                              emptyLegImage:
+                              emptyImage:
                                   'assets/images/front_left_leg_image.png',
                             ),
                           ),
@@ -294,7 +294,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                   _pictureLeftHindProvider = updatedProvider;
                                 });
                               }, source),
-                              emptyLegImage:
+                              emptyImage:
                                   'assets/images/front_left_leg_image.png',
                             ),
                           ),
@@ -311,7 +311,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                   _pictureRightHindProvider = updatedProvider;
                                 });
                               }, source),
-                              emptyLegImage:
+                              emptyImage:
                                   'assets/images/front_left_leg_image.png',
                             ),
                           ),

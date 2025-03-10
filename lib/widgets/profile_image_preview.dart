@@ -3,8 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 class ProfileImagePreview extends StatelessWidget {
   final ImageProvider<Object>? profileImageProvider;
-  final Function(ImageSource)
-      onImageSourceSelected; // Change to accept ImageSource
+  final Function(ImageSource) onImageSourceSelected;
 
   const ProfileImagePreview({
     super.key,

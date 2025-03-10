@@ -2,6 +2,7 @@ import 'dart:convert';
 import 'dart:io';
 import 'package:equus/models/client.dart';
 import 'package:equus/screens/appointment/create_appointment.dart';
+import 'package:equus/screens/appointment/create_measure_screen.dart';
 import 'package:equus/widgets/main_button_blue.dart';
 import 'package:http/http.dart' as http;
 import 'package:equus/models/horse.dart';
@@ -203,7 +204,7 @@ class HorseProfileState extends State<HorseProfile> {
                                   style: TextStyle(fontSize: 17),
                                 ),
                                 onTap: () {
-                                  // Add onTap functionality if needed for owners
+                                  // TODO - Fazer ecrã de clientes
                                 },
                               );
                             }).toList(),
@@ -227,7 +228,9 @@ class HorseProfileState extends State<HorseProfile> {
                                   client.name,
                                   style: TextStyle(fontSize: 17),
                                 ),
-                                onTap: () {},
+                                onTap: () {
+                                  // TODO - Fazer ecrã de clientes
+                                },
                               );
                             }).toList(),
                           ),
