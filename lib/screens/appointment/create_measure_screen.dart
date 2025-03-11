@@ -39,75 +39,30 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       _selectedImage = File(pickedImage.path);
     });
 
-    Navigator.push(
+    final image = await decodeImageFromList(_selectedImage!.readAsBytesSync());
+
+    setState(() {
+      imageWidth = image.width;
+      imageHeight = image.height;
+    });
+
+    final File? resultImage = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => SliderImageCoordinatesPicker(
           coordinates: _coordinates,
           selectedImage: _selectedImage,
+          imageWidth: imageWidth,
+          imageHeight: imageHeight,
         ),
       ),
     );
 
-    setState(() {
-      _selectedImage = File(pickedImage.path);
-    });
-
-    // final image = await decodeImageFromList(_selectedImage!.readAsBytesSync());
-    //
-    // setState(() {
-    //   imageWidth = image.width;
-    //   imageHeight = image.height;
-    // });
-    //
-    // // Rosa escuro (coordenadas 0 e 1)
-    // final colorCoordinatesRosaEscuro = Colors.purple[800]!;
-    //
-    // final coordinatesRosaEscuro = await Navigator.push<List<Offset>>(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => ImageCoordinatesPicker(
-    //       image: _selectedImage!,
-    //       imageWidth: imageWidth!,
-    //       imageHeight: imageHeight!,
-    //       coordinates: List.of(_coordinates), // Passa uma cópia atual
-    //       color: colorCoordinatesRosaEscuro,
-    //     ),
-    //   ),
-    // );
-    //
-    // if (coordinatesRosaEscuro != null) {
-    //   setState(() {
-    //     _coordinates.addAll(coordinatesRosaEscuro);
-    //   });
-    // }
-    //
-    // // Rosa claro (coordenadas 2 e 3)
-    // final colorCoordinatesRosaClaro = Colors.purple[300]!;
-    //
-    // final coordinatesRosaClaro = await Navigator.push<List<Offset>>(
-    //   context,
-    //   MaterialPageRoute(
-    //     builder: (context) => ImageCoordinatesPicker(
-    //       image: _selectedImage!,
-    //       imageWidth: imageWidth!,
-    //       imageHeight: imageHeight!,
-    //       coordinates: List.of(_coordinates), // Inclui as coordenadas já adicionadas
-    //       color: colorCoordinatesRosaClaro,
-    //     ),
-    //   ),
-    // );
-    //
-    // if (coordinatesRosaClaro != null) {
-    //   setState(() {
-    //     _coordinates.addAll(coordinatesRosaClaro);
-    //   });
-    // }
-    //
-    // // Atualiza a imagem final com todas as coordenadas
-    // setState(() {
-    //   _selectedImage = File(_selectedImage!.path); // Recarregar imagem final
-    // });
+    if (resultImage != null) {
+      setState(() {
+        _selectedImage = resultImage;
+      });
+    }
   }
 
   @override
