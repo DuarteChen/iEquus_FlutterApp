@@ -1,6 +1,6 @@
 import 'dart:typed_data';
 import 'package:equus/models/horse.dart';
-import 'package:equus/screens/appointment/slider_image_coordinates_picker.dart';
+import 'package:equus/screens/appointment/slider_image_coordinates_picker_deprecated.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
@@ -49,7 +49,7 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
     final Map<String, dynamic> result = await Navigator.push(
       context,
       MaterialPageRoute(
-        builder: (context) => SliderImageCoordinatesPicker(
+        builder: (context) => SliderImageCoordinatesPickerDeprecated(
           coordinates: _coordinates,
           selectedImage: _selectedImage,
           imageWidth: imageWidth,

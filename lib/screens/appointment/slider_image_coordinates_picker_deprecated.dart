@@ -4,13 +4,13 @@ import 'package:flutter/material.dart';
 
 import 'coordinates_painter.dart';
 
-class SliderImageCoordinatesPicker extends StatefulWidget {
+class SliderImageCoordinatesPickerDeprecated extends StatefulWidget {
   File? selectedImage;
   List<Offset> coordinates;
   int? imageWidth;
   int? imageHeight;
 
-  SliderImageCoordinatesPicker({
+  SliderImageCoordinatesPickerDeprecated({
     super.key,
     required this.selectedImage,
     required this.coordinates,
@@ -19,12 +19,12 @@ class SliderImageCoordinatesPicker extends StatefulWidget {
   });
 
   @override
-  _SliderImageCoordinatesPickerState createState() =>
-      _SliderImageCoordinatesPickerState();
+  _SliderImageCoordinatesPickerDeprecatedState createState() =>
+      _SliderImageCoordinatesPickerDeprecatedState();
 }
 
-class _SliderImageCoordinatesPickerState
-    extends State<SliderImageCoordinatesPicker> {
+class _SliderImageCoordinatesPickerDeprecatedState
+    extends State<SliderImageCoordinatesPickerDeprecated> {
   List<Offset> _localCoordinates = [];
   List<Offset>? screen1Coordinates = [];
   List<Offset>? screen2Coordinates = [];
@@ -43,7 +43,8 @@ class _SliderImageCoordinatesPickerState
   }
 
   @override
-  void didUpdateWidget(covariant SliderImageCoordinatesPicker oldWidget) {
+  void didUpdateWidget(
+      covariant SliderImageCoordinatesPickerDeprecated oldWidget) {
     super.didUpdateWidget(oldWidget);
     if (widget.coordinates != oldWidget.coordinates) {
       _localCoordinates = List.from(widget.coordinates);
@@ -202,7 +203,7 @@ class _SliderImageCoordinatesPickerState
   Widget _imageCoordinatesPicker1(Color paintColor) {
     GlobalKey imageKey = GlobalKey();
 
-    Future<void> _saveImageWithCoordinates(Offset imageCoordinates) async {
+    Future<void> saveImageWithCoordinates(Offset imageCoordinates) async {
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
       final image =
@@ -256,7 +257,7 @@ class _SliderImageCoordinatesPickerState
             localPosition.dx <= displayWidth &&
             localPosition.dy >= 0 &&
             localPosition.dy <= displayHeight) {
-          await _saveImageWithCoordinates(imageCoordinates);
+          await saveImageWithCoordinates(imageCoordinates);
         }
       }
     }
@@ -287,7 +288,7 @@ class _SliderImageCoordinatesPickerState
   Widget _imageCoordinatesPicker2(Color paintColor) {
     GlobalKey imageKey = GlobalKey();
 
-    Future<void> _saveImageWithCoordinates(Offset imageCoordinates) async {
+    Future<void> saveImageWithCoordinates(Offset imageCoordinates) async {
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
       final image =
@@ -318,7 +319,7 @@ class _SliderImageCoordinatesPickerState
       });
     }
 
-    Future<void> _addCoordinate(TapDownDetails details) async {
+    Future<void> addCoordinate(TapDownDetails details) async {
       if (screen2Coordinates!.length < 2) {
         final RenderBox renderBox =
             imageKey.currentContext!.findRenderObject() as RenderBox;
@@ -342,13 +343,13 @@ class _SliderImageCoordinatesPickerState
             localPosition.dx <= displayWidth &&
             localPosition.dy >= 0 &&
             localPosition.dy <= displayHeight) {
-          await _saveImageWithCoordinates(imageCoordinates);
+          await saveImageWithCoordinates(imageCoordinates);
         }
       }
     }
 
     return GestureDetector(
-      onTapDown: _addCoordinate,
+      onTapDown: addCoordinate,
       //onDoubleTap: _saveImageWithCoordinates, // Save on double tap
       child: Center(
         child: Stack(
@@ -374,7 +375,7 @@ class _SliderImageCoordinatesPickerState
   Widget _imageCoordinatesPicker3(Color paintColor) {
     GlobalKey imageKey = GlobalKey();
 
-    Future<void> _saveImageWithCoordinates(Offset imageCoordinates) async {
+    Future<void> saveImageWithCoordinates(Offset imageCoordinates) async {
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
       final image =
@@ -428,7 +429,7 @@ class _SliderImageCoordinatesPickerState
             localPosition.dx <= displayWidth &&
             localPosition.dy >= 0 &&
             localPosition.dy <= displayHeight) {
-          await _saveImageWithCoordinates(imageCoordinates);
+          await saveImageWithCoordinates(imageCoordinates);
         }
       }
     }
@@ -459,7 +460,7 @@ class _SliderImageCoordinatesPickerState
   Widget _imageCoordinatesPicker4(Color paintColor) {
     GlobalKey imageKey = GlobalKey();
 
-    Future<void> _saveImageWithCoordinates(Offset imageCoordinates) async {
+    Future<void> saveImageWithCoordinates(Offset imageCoordinates) async {
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
       final image =
@@ -513,7 +514,7 @@ class _SliderImageCoordinatesPickerState
             localPosition.dx <= displayWidth &&
             localPosition.dy >= 0 &&
             localPosition.dy <= displayHeight) {
-          await _saveImageWithCoordinates(imageCoordinates);
+          await saveImageWithCoordinates(imageCoordinates);
         }
       }
     }
@@ -544,7 +545,7 @@ class _SliderImageCoordinatesPickerState
   Widget _imageCoordinatesPicker5(Color paintColor) {
     GlobalKey imageKey = GlobalKey();
 
-    Future<void> _saveImageWithCoordinates(Offset imageCoordinates) async {
+    Future<void> saveImageWithCoordinates(Offset imageCoordinates) async {
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
       final image =
@@ -598,7 +599,7 @@ class _SliderImageCoordinatesPickerState
             localPosition.dx <= displayWidth &&
             localPosition.dy >= 0 &&
             localPosition.dy <= displayHeight) {
-          await _saveImageWithCoordinates(imageCoordinates);
+          await saveImageWithCoordinates(imageCoordinates);
         }
       }
     }
@@ -629,7 +630,7 @@ class _SliderImageCoordinatesPickerState
   Widget _imageCoordinatesPicker6(Color paintColor) {
     GlobalKey imageKey = GlobalKey();
 
-    Future<void> _saveImageWithCoordinates(Offset imageCoordinates) async {
+    Future<void> saveImageWithCoordinates(Offset imageCoordinates) async {
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
       final image =
@@ -683,7 +684,7 @@ class _SliderImageCoordinatesPickerState
             localPosition.dx <= displayWidth &&
             localPosition.dy >= 0 &&
             localPosition.dy <= displayHeight) {
-          await _saveImageWithCoordinates(imageCoordinates);
+          await saveImageWithCoordinates(imageCoordinates);
         }
       }
     }
@@ -714,7 +715,7 @@ class _SliderImageCoordinatesPickerState
   Widget _imageCoordinatesPicker7(Color paintColor) {
     GlobalKey imageKey = GlobalKey();
 
-    Future<void> _saveImageWithCoordinates(Offset imageCoordinates) async {
+    Future<void> saveImageWithCoordinates(Offset imageCoordinates) async {
       final recorder = PictureRecorder();
       final canvas = Canvas(recorder);
       final image =
@@ -768,7 +769,7 @@ class _SliderImageCoordinatesPickerState
             localPosition.dx <= displayWidth &&
             localPosition.dy >= 0 &&
             localPosition.dy <= displayHeight) {
-          await _saveImageWithCoordinates(imageCoordinates);
+          await saveImageWithCoordinates(imageCoordinates);
         }
       }
     }
