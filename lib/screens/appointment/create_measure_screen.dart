@@ -46,7 +46,7 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       imageHeight = image.height;
     });
 
-    final File? resultImage = await Navigator.push(
+    final Map<String, dynamic> result = await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => SliderImageCoordinatesPicker(
@@ -58,11 +58,13 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       ),
     );
 
-    if (resultImage != null) {
-      setState(() {
-        _selectedImage = resultImage;
-      });
-    }
+    setState(() {
+      _selectedImage = result['selectedImage'];
+      _coordinates.addAll(result['coordinates']);
+
+      print(_coordinates);
+      print(_selectedImage);
+    });
   }
 
   @override
