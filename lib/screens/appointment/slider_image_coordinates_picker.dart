@@ -345,10 +345,13 @@ class _SliderImageCoordinatesPickerState
     for (int i = 0; i < localCoordinates.length; i += 2) {
       final paint = Paint()
         ..color = screenColors[i ~/ 2 % screenColors.length]
-        ..style = PaintingStyle.fill;
+        ..style = PaintingStyle.fill
+        ..strokeWidth = 5;
 
       canvas.drawCircle(localCoordinates[i]!, 10, paint);
       canvas.drawCircle(localCoordinates[i + 1]!, 10, paint);
+
+      canvas.drawLine(localCoordinates[i]!, localCoordinates[i + 1]!, paint);
     }
 
     // Convert canvas to an image
@@ -359,7 +362,7 @@ class _SliderImageCoordinatesPickerState
 
     // Save the updated image
     final newImagePath =
-        widget.selectedImage!.path.replaceAll('.png', '_updated.png');
+        widget.selectedImage.path.replaceAll('.png', '_updated.png');
     final newImageFile = File(newImagePath);
     await newImageFile.writeAsBytes(buffer);
 
@@ -405,15 +408,26 @@ class _SliderImageCoordinatesPickerState
 
     return Scaffold(
       appBar: AppBar(
-        leading: IconButton(
-          onPressed: !isLoading && allCoordinatesFilled()
-              ? () async {
-                  setState(() => isLoading = true);
-                  await saveImageWithAllCoordinates();
-                }
-              : null,
-          icon: Icon(Icons.done_rounded),
-        ),
+        leading: allCoordinatesFilled()
+            ? IconButton(
+                onPressed: !isLoading && allCoordinatesFilled() == true
+                    ? () async {
+                        setState(() => isLoading = true);
+                        await saveImageWithAllCoordinates();
+                      }
+                    : null,
+                icon: const Icon(Icons.done_rounded),
+              )
+            : IconButton(
+                onPressed: () {
+                  Map<String, dynamic> result = {
+                    'selectedImage': null,
+                    'coordinates': null,
+                  };
+                  Navigator.pop(context, result);
+                },
+                icon: Icon(Icons.arrow_back),
+              ),
         title: const Text("Slider Image Coordinates Picker"),
         actions: [
           IconButton(

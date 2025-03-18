@@ -136,7 +136,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
         Navigator.pop(context);
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
-          const SnackBar(content: Text('Failed to create horse')),
+          const SnackBar(content: Text('Failed to create horse!')),
         );
       }
     }

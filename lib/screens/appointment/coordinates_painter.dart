@@ -18,7 +18,7 @@ class CoordinatesPainter extends CustomPainter {
     final paint = Paint()
       ..color = color
       ..style = PaintingStyle.stroke
-      ..strokeWidth = 2.0;
+      ..strokeWidth = 3.0;
 
     // Escalar as coordenadas reais para o tamanho da imagem exibida
     final scaleX = size.width / imageWidth;
@@ -38,6 +38,10 @@ class CoordinatesPainter extends CustomPainter {
 
       canvas.drawLine(horizontalStart, horizontalEnd, paint);
       canvas.drawLine(verticalStart, verticalEnd, paint);
+    }
+
+    if (coordinates.length == 2) {
+      canvas.drawLine(coordinates[0], coordinates[1], paint);
     }
   }
 
