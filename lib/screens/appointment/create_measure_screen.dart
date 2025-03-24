@@ -34,9 +34,9 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
 
   ImageSource? imageSource;
 
-  int? userBW;
+  int? _userBW;
   int? algorithmBW;
-  int? userBCS;
+  int? _userBCS;
   int? algorithmBCS;
   bool? favorite;
   int? veterinarianId;
@@ -124,6 +124,8 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
         measure!.id = (jsonResponse['measureID'] as int?) ?? 0;
         measure!.algorithmBCS = (jsonResponse['algorithmBCS'] as int?) ?? 0;
         measure!.algorithmBW = (jsonResponse['algorithmBW'] as int?) ?? 0;
+        measure!.userBCS = (jsonResponse['algorithmBW'] as int?) ?? 0;
+        measure!.userBW = (jsonResponse['algorithmBW'] as int?) ?? 0;
 
         algorithmBCS = measure!.algorithmBCS;
         algorithmBW = measure!.algorithmBW;
@@ -138,60 +140,67 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
   Future<void> _saveMeasure() async {}
 
   void popUpBWOrBCS(BuildContext context, String bwOrBcs) {
-    final TextEditingController _controller = TextEditingController();
+    final TextEditingController controller = TextEditingController();
+    int? initialValue;
+    if (bwOrBcs == 'Body Weight') {
+      initialValue = _userBW;
+      controller.text = _userBW?.toString() ?? '';
+    } else if (bwOrBcs == 'Body Condition Score') {
+      initialValue = _userBCS;
+      controller.text = _userBCS?.toString() ?? '';
+    }
 
     showDialog(
       context: context,
       builder: (context) {
-        return StatefulBuilder(
-          builder: (context, setState) {
-            String title = 'Edit $bwOrBcs value';
+        String title = 'Edit $bwOrBcs';
+        return AlertDialog(
+          title: Text(title),
+          content: TextField(
+            controller: controller,
+            keyboardType: TextInputType.number,
+            decoration: InputDecoration(
+              labelText: bwOrBcs,
+              border: const OutlineInputBorder(),
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () {
+                Navigator.of(context).pop(); // Close the dialog
+              },
+              child: const Text('Cancel'),
+            ),
+            TextButton(
+              onPressed: () {
+                int? number = int.tryParse(controller.text);
 
-            return AlertDialog(
-              title: Text(title),
-              content: TextField(
-                controller: _controller,
-                keyboardType: TextInputType.number,
-                decoration: InputDecoration(
-                  labelText: bwOrBcs,
-                  border: const OutlineInputBorder(),
-                ),
-              ),
-              actions: [
-                TextButton(
-                  onPressed: () {
-                    Navigator.of(context).pop(); // Close the dialog
-                  },
-                  child: const Text('Cancel'),
-                ),
-                TextButton(
-                  onPressed: () {
-                    int? number = int.tryParse(_controller.text);
-
-                    if (number != null && bwOrBcs == 'Body Weight') {
+                if (number != null) {
+                  if (bwOrBcs == 'Body Weight') {
+                    setState(() {
+                      _userBW = number;
+                    });
+                  } else if (bwOrBcs == 'Body Condition Score') {
+                    if (number < 1 || number > 5) {
                       setState(() {
-                        userBW = number;
+                        title = 'Invalid input! Must be between 1 and 5.';
                       });
-                    } else if (bwOrBcs == 'Body Condition Score') {
-                      if (number == null || number < 1 || number > 5) {
-                        setState(() {
-                          title = 'Value must be between 1 and 5!';
-                        });
-                        return; // Stop execution to prevent closing the dialog
-                      }
-
-                      setState(() {
-                        userBCS = number;
-                      });
+                      return; // Stop execution to prevent closing the dialog
                     }
-
-                    Navigator.of(context).pop();
-                  },
-                  child: const Text('Confirm'),
-                ),
-              ],
-            );
-          },
+                    setState(() {
+                      _userBCS = number;
+                    });
+                  }
+                  Navigator.of(context).pop();
+                } else {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Invalid input!')),
+                  );
+                }
+              },
+              child: const Text('Confirm'),
+            ),
+          ],
         );
       },
     );
@@ -200,44 +209,43 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
   @override
   Widget build(BuildContext context) {
     Widget bwTile(int weight) {
-      return Container(
-        width: double.infinity,
-        decoration: BoxDecoration(
-          color: Color(0xFFEEEEEE),
-          borderRadius: BorderRadius.circular(12),
-        ),
-        clipBehavior: Clip.hardEdge,
-        child: AspectRatio(
-          aspectRatio: 1,
-          child: Stack(
-            children: [
-              Positioned.fill(
-                child: Center(
-                  child: Column(
-                    mainAxisSize: MainAxisSize.min,
-                    children: [
-                      Text(
-                        "${weight.toString()} Kg",
-                        style: TextStyle(
-                            fontSize: 32, fontWeight: FontWeight.bold),
+      return Expanded(
+        child: Container(
+          height: 125,
+          decoration: BoxDecoration(
+            color: Color(0xFFEEEEEE),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          clipBehavior: Clip.hardEdge,
+          child: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      "kg",
+                      style: TextStyle(fontSize: 20),
+                    ),
+                    GestureDetector(
+                      onTap: () => popUpBWOrBCS(context, "Body Weight"),
+                      child: Icon(
+                        Icons.edit,
+                        color: Theme.of(context).primaryColor,
                       ),
-                      Text("Weight", style: TextStyle(fontSize: 32)),
-                    ],
+                    ),
+                  ],
+                ),
+                Center(
+                  child: Text(
+                    weight.toString(),
+                    style: TextStyle(fontSize: 40, fontWeight: FontWeight.bold),
                   ),
                 ),
-              ),
-              Positioned(
-                top: 10,
-                right: 10,
-                child: GestureDetector(
-                  onTap: () => popUpBWOrBCS(context, "Body Weight"),
-                  child: Icon(
-                    Icons.edit,
-                    color: Theme.of(context).primaryColor,
-                  ),
-                ),
-              ),
-            ],
+                Spacer(),
+              ],
+            ),
           ),
         ),
       );
@@ -335,51 +343,21 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                 height: 16,
               ),
               Row(
-                crossAxisAlignment: CrossAxisAlignment.center,
                 mainAxisAlignment: MainAxisAlignment.center,
                 children: [
-                  Expanded(
-                    child: userBW != null
-                        ? bwTile(userBW!)
-                        : measure == null || algorithmBW == null
-                            ? bwTile(0)
-                            : bwTile(algorithmBW!),
-                  ),
+                  _userBW != null
+                      ? bwTile(_userBW!)
+                      : measure == null || algorithmBW == null
+                          ? bwTile(0)
+                          : bwTile(algorithmBW!),
                   SizedBox(
                     width: 16,
                   ),
-                  Expanded(
-                    child: Container(
-                      decoration: BoxDecoration(
-                        color: Color(0xFFEEEEEE),
-                        borderRadius: BorderRadius.circular(12),
-                      ),
-                      child: AspectRatio(
-                        aspectRatio: 1,
-                        child: Stack(
-                          alignment: Alignment.center,
-                          children: [
-                            Center(
-                              child: measure == null || algorithmBCS == null
-                                  ? BCSGauge(bcsValue: 0)
-                                  : BCSGauge(bcsValue: algorithmBCS!),
-                            ),
-                            Positioned(
-                              top: 10,
-                              right: 10,
-                              child: GestureDetector(
-                                onTap: () {},
-                                child: Icon(
-                                  Icons.edit,
-                                  color: Theme.of(context).primaryColor,
-                                ),
-                              ),
-                            ),
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
+                  _userBCS != null
+                      ? BCSGauge(bcsValue: _userBCS!)
+                      : measure == null || algorithmBCS == null
+                          ? BCSGauge(bcsValue: 0)
+                          : BCSGauge(bcsValue: algorithmBCS!),
                 ],
               ),
             ],

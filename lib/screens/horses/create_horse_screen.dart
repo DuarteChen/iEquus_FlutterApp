@@ -230,6 +230,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                       ),
                     ),
                     const SizedBox(height: 8),
+
                     // Image rows
                     Expanded(
                       child: Row(
@@ -268,7 +269,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                 });
                               }, source),
                               emptyImage:
-                                  'assets/images/front_left_leg_image.png',
+                                  'assets/images/front_right_leg_image.png',
                             ),
                           ),
                         ],
@@ -295,7 +296,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                 });
                               }, source),
                               emptyImage:
-                                  'assets/images/front_left_leg_image.png',
+                                  'assets/images/hind_left_leg_image.png',
                             ),
                           ),
                           const SizedBox(width: 16),
@@ -312,7 +313,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
                                 });
                               }, source),
                               emptyImage:
-                                  'assets/images/front_left_leg_image.png',
+                                  'assets/images/hind_right_leg_image.png',
                             ),
                           ),
                         ],

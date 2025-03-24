@@ -330,7 +330,7 @@ class _SliderImageCoordinatesPickerState
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
     final image =
-        await decodeImageFromList(widget.selectedImage!.readAsBytesSync());
+        await decodeImageFromList(widget.selectedImage.readAsBytesSync());
 
     // Ensure localCoordinates has an even number of elements (pairs)
     if (localCoordinates.length % 2 != 0) {
