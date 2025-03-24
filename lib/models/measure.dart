@@ -1,18 +1,20 @@
 import 'dart:convert';
-
+import 'package:http/http.dart' as http;
 import 'package:flutter/material.dart';
 
 class Measure {
   int id;
-  final String? picturePath;
+  String picturePath;
   final List<Offset> coordinates;
   final DateTime date;
-  int? userBW;
-  int? algorithmBW;
-  int? userBCS;
-  int? algorithmBCS;
-  bool? favorite;
   final int horseId;
+
+  int? algorithmBW;
+  int? algorithmBCS;
+
+  int? userBW;
+  int? userBCS;
+  bool? favorite;
   int? veterinarianId;
   int? appointmentId;
 
@@ -24,7 +26,7 @@ class Measure {
     this.algorithmBCS,
     required this.date,
     required this.coordinates,
-    this.picturePath,
+    required this.picturePath,
     this.favorite,
     required this.horseId,
     this.veterinarianId,
@@ -79,5 +81,72 @@ class Measure {
     return decoded.map((point) {
       return Offset(point['x'], point['y']);
     }).toList();
+  }
+
+  Future<bool> uploadToServer() async {
+    var request = http.MultipartRequest(
+      'POST',
+      Uri.parse('http://10.0.2.2:9090/measures'),
+    );
+    request.fields['date'] = date.toString();
+    request.fields['coordinates'] = convertOffsetsToJson(coordinates);
+    request.fields['horseId'] = horseId.toString();
+    request.files.add(
+      await http.MultipartFile.fromPath('picturePath', picturePath),
+    );
+
+    var response = await request.send();
+
+    if (response.statusCode == 201) {
+      var responseBody = await response.stream.bytesToString();
+      var jsonResponse = jsonDecode(responseBody);
+
+      id = (jsonResponse['measureID'] as int?) ?? 0;
+      picturePath = jsonResponse['picturePath'];
+      algorithmBCS = (jsonResponse['algorithmBCS'] as int?) ?? 0;
+      algorithmBW = (jsonResponse['algorithmBW'] as int?) ?? 0;
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> editBW(int number) async {
+    var request = http.MultipartRequest(
+      'PUT',
+      Uri.parse('http://10.0.2.2:9090/measures/$id'),
+    );
+    request.fields['userBW'] = number.toString();
+
+    var response = await request.send();
+
+    if (response.statusCode == 201) {
+      var responseBody = await response.stream.bytesToString();
+      var jsonResponse = jsonDecode(responseBody);
+
+      userBW = (jsonResponse['userBW'] as int?) ?? 0;
+
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> editBCS(int number) async {
+    var request = http.MultipartRequest(
+      'PUT',
+      Uri.parse('http://10.0.2.2:9090/measures/$id'),
+    );
+    request.fields['userBCS'] = number.toString();
+
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
+      var responseBody = await response.stream.bytesToString();
+      var jsonResponse = jsonDecode(responseBody);
+
+      userBW = (jsonResponse['userBCS'] as int?) ?? 0;
+
+      return true;
+    }
+    return false;
   }
 }
