@@ -19,6 +19,7 @@ class _SliderImageCoordinatesPickerState
     extends State<SliderImageCoordinatesPicker> {
   bool isLoading = false;
   late File newImageLocal;
+
   List<Offset?> localCoordinates = [
     null,
     null,
@@ -57,6 +58,8 @@ class _SliderImageCoordinatesPickerState
     Colors.red,
     Colors.green,
   ];
+
+  Map<String, dynamic> result = {};
 
   @override
   void initState() {
@@ -135,35 +138,42 @@ class _SliderImageCoordinatesPickerState
     });
   }
 
-  void _goToNextPage() {
+  void _goToNextPage() async {
     setState(() {
       if (_currentPageIndex == 0) {
         localCoordinates[0] = screen0Coordinates[0];
         localCoordinates[1] = screen0Coordinates[1];
+        _currentPageIndex++;
       } else if (_currentPageIndex == 1) {
         localCoordinates[2] = screen1Coordinates[0];
         localCoordinates[3] = screen1Coordinates[1];
+        _currentPageIndex++;
       } else if (_currentPageIndex == 2) {
         localCoordinates[4] = screen2Coordinates[0];
         localCoordinates[5] = screen2Coordinates[1];
+        _currentPageIndex++;
       } else if (_currentPageIndex == 3) {
         localCoordinates[6] = screen3Coordinates[0];
         localCoordinates[7] = screen3Coordinates[1];
+        _currentPageIndex++;
       } else if (_currentPageIndex == 4) {
         localCoordinates[8] = screen4Coordinates[0];
         localCoordinates[9] = screen4Coordinates[1];
+        _currentPageIndex++;
       } else if (_currentPageIndex == 5) {
         localCoordinates[10] = screen5Coordinates[0];
         localCoordinates[11] = screen5Coordinates[1];
+        _currentPageIndex++;
       } else if (_currentPageIndex == 6) {
         localCoordinates[12] = screen6Coordinates[0];
         localCoordinates[13] = screen6Coordinates[1];
-      }
-      //Change page
-      if (_currentPageIndex < 7) {
         _currentPageIndex++;
+        isLoading = true;
       }
     });
+    if (_currentPageIndex == 7) {
+      await saveImageWithAllCoordinates();
+    }
   }
 
   bool pageCoordinatesSizeCheck() {
@@ -363,19 +373,13 @@ class _SliderImageCoordinatesPickerState
     // Save the updated image
     final newImagePath =
         widget.selectedImage.path.replaceAll('.png', '_updated.png');
-    final newImageFile = File(newImagePath);
+    File newImageFile = File(newImagePath);
     await newImageFile.writeAsBytes(buffer);
 
     setState(() {
       newImageLocal = newImageFile;
       isLoading = false;
     });
-
-    Map<String, dynamic> result = {
-      'selectedImage': newImageLocal,
-      'coordinates': localCoordinates,
-    };
-    Navigator.pop(context, result);
   }
 
 //----------------------------------------------------------------------------//
@@ -413,7 +417,11 @@ class _SliderImageCoordinatesPickerState
                 onPressed: !isLoading && allCoordinatesFilled() == true
                     ? () async {
                         setState(() => isLoading = true);
-                        await saveImageWithAllCoordinates();
+                        Map<String, dynamic> result = {
+                          'selectedImage': newImageLocal,
+                          'coordinates': localCoordinates,
+                        };
+                        Navigator.pop(context, result);
                       }
                     : null,
                 icon: const Icon(Icons.done_rounded),
@@ -428,7 +436,9 @@ class _SliderImageCoordinatesPickerState
                 },
                 icon: Icon(Icons.arrow_back),
               ),
-        title: const Text("Slider Image Coordinates Picker"),
+        title: _currentPageIndex <= 6
+            ? Text("Line ${_currentPageIndex + 1}/7")
+            : Text("Result"),
         actions: [
           IconButton(
             icon: const Icon(Icons.backspace),

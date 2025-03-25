@@ -301,6 +301,38 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
     );
   }
 
+  void _showImageSourceDialog(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      builder: (BuildContext context) {
+        return SafeArea(
+          child: Wrap(
+            children: <Widget>[
+              ListTile(
+                leading: Icon(Icons.photo_library),
+                title: Text('Choose from Gallery'),
+                onTap: () {
+                  imageSource = ImageSource.gallery;
+                  _pickImage(imageSource!);
+                  Navigator.pop(context);
+                },
+              ),
+              ListTile(
+                leading: Icon(Icons.camera_alt),
+                title: Text('Take a Photo'),
+                onTap: () {
+                  imageSource = ImageSource.camera;
+                  _pickImage(imageSource!);
+                  Navigator.pop(context);
+                },
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     Widget bcsTile(int bcsValue) {
@@ -511,38 +543,6 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
           ),
         ),
       ),
-    );
-  }
-
-  void _showImageSourceDialog(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      builder: (BuildContext context) {
-        return SafeArea(
-          child: Wrap(
-            children: <Widget>[
-              ListTile(
-                leading: Icon(Icons.photo_library),
-                title: Text('Choose from Gallery'),
-                onTap: () {
-                  imageSource = ImageSource.gallery;
-                  _pickImage(imageSource!);
-                  Navigator.pop(context);
-                },
-              ),
-              ListTile(
-                leading: Icon(Icons.camera_alt),
-                title: Text('Take a Photo'),
-                onTap: () {
-                  imageSource = ImageSource.camera;
-                  _pickImage(imageSource!);
-                  Navigator.pop(context);
-                },
-              ),
-            ],
-          ),
-        );
-      },
     );
   }
 }
