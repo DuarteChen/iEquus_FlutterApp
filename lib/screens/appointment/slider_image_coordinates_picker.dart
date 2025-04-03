@@ -18,7 +18,7 @@ class SliderImageCoordinatesPicker extends StatefulWidget {
 class _SliderImageCoordinatesPickerState
     extends State<SliderImageCoordinatesPicker> {
   bool isLoading = false;
-  late File newImageLocal;
+  File? newImageLocal;
 
   List<Offset?> localCoordinates = [
     null,
@@ -50,13 +50,34 @@ class _SliderImageCoordinatesPickerState
   int _currentPageIndex = 0;
 
   List<Color> screenColors = [
-    Colors.purple[900]!,
-    Colors.purple[200]!,
-    Colors.white,
-    Colors.blue,
-    Colors.orange,
-    Colors.red,
-    Colors.green,
+    const Color.fromRGBO(74, 20, 140, 1),
+    const Color.fromRGBO(206, 147, 216, 1),
+    const Color.fromRGBO(255, 255, 255, 1),
+    const Color.fromRGBO(33, 150, 243, 1),
+    const Color.fromRGBO(255, 152, 0, 1),
+    const Color.fromRGBO(244, 67, 54, 1),
+    const Color.fromRGBO(76, 175, 80, 1),
+  ];
+
+  List<String> helpImages = [
+    'assets/images/measures_lines/line_1.png',
+    'assets/images/measures_lines/line_2.png',
+    'assets/images/measures_lines/line_3.png',
+    'assets/images/measures_lines/line_4.png',
+    'assets/images/measures_lines/line_5.png',
+    'assets/images/measures_lines/line_6.png',
+    'assets/images/measures_lines/line_7.png',
+    'assets/images/measures_lines/lines.png',
+  ];
+
+  List<String> measures = [
+    "Height at the withers",
+    "Center of the abdomen",
+    "Girth area to withers",
+    "Girth area to the back of the belly",
+    "Neck width",
+    "Neck length",
+    "Body length"
   ];
 
   Map<String, dynamic> result = {};
@@ -64,7 +85,7 @@ class _SliderImageCoordinatesPickerState
   @override
   void initState() {
     super.initState();
-    newImageLocal = widget.selectedImage;
+    //newImageLocal = widget.selectedImage; não preciso que seja logo dada a variável
     _loadImageDimensions();
   }
 
@@ -168,11 +189,13 @@ class _SliderImageCoordinatesPickerState
         localCoordinates[12] = screen6Coordinates[0];
         localCoordinates[13] = screen6Coordinates[1];
         _currentPageIndex++;
-        isLoading = true;
       }
     });
     if (_currentPageIndex == 7) {
       await saveImageWithAllCoordinates();
+      setState(() {
+        _currentPageIndex = 7; // Ensure the correct screen is shown
+      }); // Rebuild the UI after saving the image
     }
   }
 
@@ -375,11 +398,42 @@ class _SliderImageCoordinatesPickerState
         widget.selectedImage.path.replaceAll('.png', '_updated.png');
     File newImageFile = File(newImagePath);
     await newImageFile.writeAsBytes(buffer);
-
     setState(() {
       newImageLocal = newImageFile;
+    });
+
+    setState(() {
       isLoading = false;
     });
+  }
+
+  void _showHelpPopup(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        String title = '';
+        if (_currentPageIndex < measures.length) {
+          title = measures[_currentPageIndex];
+        } else {
+          title = 'Help';
+        }
+        return AlertDialog(
+          title: Text(title),
+          contentPadding: EdgeInsets.zero,
+          content: _currentPageIndex < helpImages.length
+              ? Image.asset(helpImages[_currentPageIndex])
+              : const Text('No help image available for this page.'),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () {
+                Navigator.of(context).pop();
+              },
+            ),
+          ],
+        );
+      },
+    );
   }
 
 //----------------------------------------------------------------------------//
@@ -412,76 +466,96 @@ class _SliderImageCoordinatesPickerState
 
     return Scaffold(
       appBar: AppBar(
-        leading: allCoordinatesFilled()
-            ? IconButton(
-                onPressed: !isLoading && allCoordinatesFilled() == true
-                    ? () async {
-                        setState(() => isLoading = true);
-                        Map<String, dynamic> result = {
-                          'selectedImage': newImageLocal,
-                          'coordinates': localCoordinates,
-                        };
-                        Navigator.pop(context, result);
-                      }
-                    : null,
-                icon: const Icon(Icons.done_rounded),
-              )
-            : IconButton(
-                onPressed: () {
-                  Map<String, dynamic> result = {
-                    'selectedImage': null,
-                    'coordinates': null,
-                  };
-                  Navigator.pop(context, result);
-                },
-                icon: Icon(Icons.arrow_back),
-              ),
+        leading: IconButton(
+          onPressed: () {
+            Navigator.pop(context, result);
+          },
+          icon: const Icon(Icons.arrow_back),
+        ),
         title: _currentPageIndex <= 6
             ? Text("Line ${_currentPageIndex + 1}/7")
             : Text("Result"),
         actions: [
-          IconButton(
-            icon: const Icon(Icons.backspace),
-            onPressed:
-                !isLoading && _currentPageIndex < 7 ? _undoCoordinate : null,
-          ),
+          !allCoordinatesFilled() && _currentPageIndex < 7
+              ? IconButton(
+                  icon: const Icon(Icons.backspace),
+                  onPressed: !isLoading ? _undoCoordinate : null,
+                )
+              : IconButton(
+                  onPressed: !isLoading
+                      ? () async {
+                          setState(() => isLoading = true);
+                          Map<String, dynamic> result = {
+                            'selectedImage': newImageLocal,
+                            'coordinates': localCoordinates,
+                          };
+                          Navigator.pop(context, result);
+                        }
+                      : null,
+                  icon: const Icon(Icons.done_rounded),
+                ),
         ],
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
           : Column(
               children: [
+                if (_currentPageIndex < 7)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            measures[_currentPageIndex],
+                            textAlign: TextAlign.center,
+                            style: const TextStyle(
+                              fontSize: 20,
+                            ),
+                          ),
+                        ),
+                        IconButton(
+                          onPressed: () {
+                            _showHelpPopup(context);
+                          },
+                          icon: Icon(Icons.help),
+                        ),
+                      ],
+                    ),
+                  ),
                 Expanded(
                   child: IndexedStack(
                     index: _currentPageIndex,
                     children: screens,
                   ),
                 ),
-                Padding(
-                  padding: const EdgeInsets.all(16.0),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceAround,
-                    children: [
-                      ElevatedButton(
-                        onPressed: !isLoading &&
-                                _currentPageIndex > 0 &&
-                                (pageCoordinatesSizeCheck() ||
-                                    pageBackCoordinatesSizeCheck())
-                            ? _goToPreviousPage
-                            : null,
-                        child: const Text('Previous'),
-                      ),
-                      ElevatedButton(
-                        onPressed: !isLoading &&
-                                _currentPageIndex < screens.length - 1 &&
-                                pageCoordinatesSizeCheck()
-                            ? _goToNextPage
-                            : null,
-                        child: const Text('Next'),
-                      ),
-                    ],
+                if (_currentPageIndex < 7)
+                  Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceAround,
+                      children: [
+                        ElevatedButton(
+                          onPressed: !isLoading &&
+                                  _currentPageIndex > 0 &&
+                                  (pageCoordinatesSizeCheck() ||
+                                      pageBackCoordinatesSizeCheck())
+                              ? _goToPreviousPage
+                              : null,
+                          child: const Text('Previous'),
+                        ),
+                        ElevatedButton(
+                          onPressed: !isLoading &&
+                                  _currentPageIndex < screens.length - 1 &&
+                                  pageCoordinatesSizeCheck()
+                              ? _goToNextPage
+                              : null,
+                          child: const Text('Next'),
+                        ),
+                      ],
+                    ),
                   ),
-                ),
               ],
             ),
     );
@@ -674,6 +748,27 @@ class _SliderImageCoordinatesPickerState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
+          if (newImageLocal != null)
+            Container(
+              decoration: BoxDecoration(
+                borderRadius: BorderRadius.circular(12),
+                boxShadow: [
+                  BoxShadow(
+                    color: Colors.black26,
+                    blurRadius: 4,
+                    spreadRadius: 1,
+                    offset: Offset(0, 2),
+                  ),
+                ],
+              ),
+              clipBehavior:
+                  Clip.hardEdge, // Ensures the image respects border radius
+              child: ClipRRect(
+                borderRadius: BorderRadius.circular(12),
+                child: Image.file(newImageLocal!),
+              ),
+            ),
+          const SizedBox(height: 10),
           const Text(
             'Selected Coordinates:',
             style: TextStyle(fontSize: 18, fontWeight: FontWeight.bold),
@@ -691,8 +786,7 @@ class _SliderImageCoordinatesPickerState
                       );
                     },
                   )
-                : const Center(
-                    child: Text('Not enought coordinates selected.')),
+                : const Center(child: Text('Not enough coordinates selected.')),
           ),
         ],
       ),

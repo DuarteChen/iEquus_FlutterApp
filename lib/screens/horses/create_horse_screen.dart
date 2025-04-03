@@ -1,11 +1,11 @@
 import 'dart:io';
-import 'package:equus/models/horse.dart';
+import 'package:equus/providers/horse_provider.dart';
 import 'package:equus/widgets/main_button_blue.dart';
 import 'package:equus/widgets/profile_image_preview.dart';
 import 'package:equus/widgets/small_image_preview.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
 
 class CreateHorseScreen extends StatefulWidget {
   const CreateHorseScreen({super.key});
@@ -70,71 +70,24 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
 
   Future<void> _saveHorse() async {
     if (_formKey.currentState!.validate()) {
-      //Cria um objeto da classe Horse
-      final horse = Horse(
-        idHorse: 0,
-        name: _nameController.text,
-        birthDate: _selectedDate,
-      );
+      final horseProvider = Provider.of<HorseProvider>(context, listen: false);
 
-      var request = http.MultipartRequest(
-          'POST', Uri.parse('http://10.0.2.2:9090/horses'));
+      try {
+        await horseProvider.addHorse(
+          _nameController.text,
+          _selectedDate,
+          _profilePictureFile,
+          _pictureLeftFrontFile,
+          _pictureRightFrontFile,
+          _pictureLeftHindFile,
+          _pictureRightHindFile,
+        );
 
-      request.fields['name'] = horse.name;
-      if (horse.birthDate != null) {
-        request.fields['birthDate'] =
-            '${horse.birthDate!.year}-${horse.birthDate!.month.toString().padLeft(2, '0')}-${horse.birthDate!.day.toString().padLeft(2, '0')}';
-      }
-
-      if (_profilePictureFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'photo',
-            _profilePictureFile!.path,
-          ),
-        );
-      }
-      if (_pictureLeftFrontFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'pictureLeftFront',
-            _pictureLeftFrontFile!.path,
-          ),
-        );
-      }
-      if (_pictureRightFrontFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'pictureRightFront',
-            _pictureRightFrontFile!.path,
-          ),
-        );
-      }
-      if (_pictureLeftHindFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'pictureLeftHind',
-            _pictureLeftHindFile!.path,
-          ),
-        );
-      }
-      if (_pictureRightHindFile != null) {
-        request.files.add(
-          await http.MultipartFile.fromPath(
-            'pictureRightHind',
-            _pictureRightHindFile!.path,
-          ),
-        );
-      }
-
-      var response = await request.send();
-
-      if (response.statusCode == 201) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Horse created successfully!')),
         );
         Navigator.pop(context);
-      } else {
+      } catch (e) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Failed to create horse!')),
         );

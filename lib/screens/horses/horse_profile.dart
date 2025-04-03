@@ -1,13 +1,13 @@
-import 'dart:convert';
 import 'dart:io';
-import 'package:equus/models/client.dart';
+import 'package:equus/models/horse.dart';
+import 'package:equus/providers/horse_provider.dart';
 import 'package:equus/screens/appointment/create_appointment.dart';
 import 'package:equus/widgets/main_button_blue.dart';
-import 'package:http/http.dart' as http;
-import 'package:equus/models/horse.dart';
 import 'package:equus/widgets/profile_image_preview.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
+import 'package:provider/provider.dart';
+import 'package:http/http.dart' as http;
 
 class HorseProfile extends StatefulWidget {
   const HorseProfile({super.key, required this.horse});
@@ -20,9 +20,6 @@ class HorseProfile extends StatefulWidget {
 
 class HorseProfileState extends State<HorseProfile> {
   File? _profilePictureFile;
-  ImageProvider<Object>? _profileImageProvider;
-  List<Client> _horseClients = [];
-  final List<Client> _horseOwners = [];
 
   late Future<void> _initializationFuture;
 
@@ -33,44 +30,9 @@ class HorseProfileState extends State<HorseProfile> {
   }
 
   Future<void> _initializeScreen() async {
-    _loadImageProvider();
-    await _fetchHorseClients();
-  }
-
-  void _loadImageProvider() {
-    if (widget.horse.profilePicturePath != null &&
-        widget.horse.profilePicturePath!.isNotEmpty) {
-      _profileImageProvider = NetworkImage(widget.horse.profilePicturePath!);
-    }
-  }
-
-  Future<void> _fetchHorseClients() async {
-    final response = await http.get(Uri.parse(
-        'http://10.0.2.2:9090/horse/${widget.horse.idHorse}/clients'));
-
-    if (response.statusCode == 200) {
-      final List<dynamic> clientsJson = json.decode(response.body);
-      setState(() {
-        _horseClients = clientsJson
-            .map((json) => Client.fromJson(json))
-            .toList()
-            .cast<Client>();
-
-        for (var client in List.from(_horseClients)) {
-          if (client.isOwner) {
-            _horseOwners.add(client);
-            _horseClients.remove(client);
-          }
-        }
-      });
-    } else {
-      setState(() {
-        _horseClients = [];
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Failed to load clients for this horse.')),
-      );
-    }
+    final horseProvider = Provider.of<HorseProvider>(context, listen: false);
+    await horseProvider.loadHorseData(widget.horse.idHorse);
+    await horseProvider.loadHorseClients(widget.horse.idHorse);
   }
 
   Future<void> pickImage(ImageSource source) async {
@@ -85,6 +47,7 @@ class HorseProfileState extends State<HorseProfile> {
   }
 
   Future<void> _updateHorsePhoto() async {
+    final horseProvider = Provider.of<HorseProvider>(context, listen: false);
     Horse horse = widget.horse;
 
     var request = http.MultipartRequest(
@@ -106,7 +69,7 @@ class HorseProfileState extends State<HorseProfile> {
       );
 
       setState(() {
-        _profileImageProvider = FileImage(_profilePictureFile!);
+        horseProvider.updateHorsePhoto(horse.idHorse, _profilePictureFile!);
       });
     } else {
       ScaffoldMessenger.of(context).showSnackBar(
@@ -118,17 +81,15 @@ class HorseProfileState extends State<HorseProfile> {
   @override
   Widget build(BuildContext context) {
     return FutureBuilder<void>(
-      future: _initializationFuture, // Use the combined initialization Future
+      future: _initializationFuture,
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
-          // Show loading indicator for the entire screen
           return const Scaffold(
             body: Center(
               child: CircularProgressIndicator(),
             ),
           );
         } else if (snapshot.hasError) {
-          // Show error screen for the entire screen if initialization fails
           return Scaffold(
             body: Center(
               child:
@@ -136,6 +97,8 @@ class HorseProfileState extends State<HorseProfile> {
             ),
           );
         } else {
+          final horseProvider = Provider.of<HorseProvider>(context);
+
           return Scaffold(
             body: Scrollbar(
               interactive: true,
@@ -146,9 +109,8 @@ class HorseProfileState extends State<HorseProfile> {
                 child: Column(
                   children: [
                     ProfileImagePreview(
-                      profileImageProvider: _profileImageProvider,
-                      onImageSourceSelected: (source) =>
-                          pickImage(source), // Pass pickImage
+                      profileImageProvider: horseProvider.profileImageProvider,
+                      onImageSourceSelected: (source) => pickImage(source),
                     ),
                     // Title Bar ------------------------------------------
                     Container(
@@ -181,8 +143,7 @@ class HorseProfileState extends State<HorseProfile> {
                                 fontSize: 18, fontWeight: FontWeight.bold),
                           ),
                           Column(
-                            // Use Column instead of Wrap for ListTiles
-                            children: _horseOwners.map((client) {
+                            children: horseProvider.horseOwners.map((client) {
                               return ListTile(
                                 subtitle: Text("Owner"),
                                 leading: Container(
@@ -209,7 +170,7 @@ class HorseProfileState extends State<HorseProfile> {
                             }).toList(),
                           ),
                           Column(
-                            children: _horseClients.map((client) {
+                            children: horseProvider.horseClients.map((client) {
                               return ListTile(
                                 subtitle: Text("Care taker"),
                                 leading: Container(
@@ -263,45 +224,6 @@ class HorseProfileState extends State<HorseProfile> {
                                   style: TextStyle(fontSize: 17),
                                 ),
                                 onTap: () {},
-                              ),
-                              SizedBox(
-                                width: 8,
-                              ),
-                              Row(
-                                children: [
-                                  Expanded(
-                                    child: Column(
-                                      children: [
-                                        Container(
-                                          width: double.infinity,
-                                          height: 50,
-                                          decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.black)),
-                                        ),
-                                        Container(
-                                          width: double.infinity,
-                                          height: 50,
-                                          decoration: BoxDecoration(
-                                              border: Border.all(
-                                                  width: 1,
-                                                  color: Colors.black)),
-                                        )
-                                      ],
-                                    ),
-                                  ),
-                                  Expanded(
-                                    child: Container(
-                                      width: double.infinity,
-                                      height: 100,
-                                      decoration: BoxDecoration(
-                                        border: Border.all(
-                                            width: 1, color: Colors.black),
-                                      ),
-                                    ),
-                                  )
-                                ],
                               ),
                             ],
                           ),

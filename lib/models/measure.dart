@@ -5,7 +5,7 @@ import 'package:flutter/material.dart';
 class Measure {
   int id;
   String picturePath;
-  final List<Offset> coordinates;
+  List<Offset> coordinates;
   final DateTime date;
   final int horseId;
 
@@ -83,7 +83,7 @@ class Measure {
     }).toList();
   }
 
-  Future<bool> uploadToServer() async {
+  Future<bool> firstUploadToServer() async {
     var request = http.MultipartRequest(
       'POST',
       Uri.parse('http://10.0.2.2:9090/measures'),
@@ -91,9 +91,12 @@ class Measure {
     request.fields['date'] = date.toString();
     request.fields['coordinates'] = convertOffsetsToJson(coordinates);
     request.fields['horseId'] = horseId.toString();
-    request.files.add(
-      await http.MultipartFile.fromPath('picturePath', picturePath),
-    );
+
+    if (picturePath.isNotEmpty) {
+      request.files.add(
+        await http.MultipartFile.fromPath('picturePath', picturePath),
+      );
+    }
 
     var response = await request.send();
 
@@ -102,49 +105,73 @@ class Measure {
       var jsonResponse = jsonDecode(responseBody);
 
       id = (jsonResponse['measureID'] as int?) ?? 0;
-      picturePath = jsonResponse['picturePath'];
-      algorithmBCS = (jsonResponse['algorithmBCS'] as int?) ?? 0;
-      algorithmBW = (jsonResponse['algorithmBW'] as int?) ?? 0;
-      return true;
-    }
-    return false;
-  }
 
-  Future<bool> editBW(int number) async {
-    var request = http.MultipartRequest(
-      'PUT',
-      Uri.parse('http://10.0.2.2:9090/measures/$id'),
-    );
-    request.fields['userBW'] = number.toString();
+      if (jsonResponse.containsKey('picturePath')) {
+        String receivedPicturePath = jsonResponse['picturePath'];
+        if (receivedPicturePath.isNotEmpty) {
+          picturePath = receivedPicturePath;
+        }
+      }
 
-    var response = await request.send();
-
-    if (response.statusCode == 201) {
-      var responseBody = await response.stream.bytesToString();
-      var jsonResponse = jsonDecode(responseBody);
-
-      userBW = (jsonResponse['userBW'] as int?) ?? 0;
+      if (jsonResponse.containsKey('algorithmBCS')) {
+        algorithmBCS = (jsonResponse['algorithmBCS'] as int?);
+      }
+      if (jsonResponse.containsKey('algorithmBW')) {
+        algorithmBW = (jsonResponse['algorithmBW'] as int?);
+      }
 
       return true;
     }
     return false;
   }
 
-  Future<bool> editBCS(int number) async {
+  Future<bool> editBWandBCS(int? bw, int? bcs) async {
+    if (id == 0) {
+      await firstUploadToServer();
+    }
+
     var request = http.MultipartRequest(
       'PUT',
       Uri.parse('http://10.0.2.2:9090/measures/$id'),
     );
-    request.fields['userBCS'] = number.toString();
-
+    if (bw != null) {
+      request.fields['userBW'] = bw.toString();
+    }
+    if (bcs != null) {
+      request.fields['userBCS'] = bcs.toString();
+    }
     var response = await request.send();
 
     if (response.statusCode == 200) {
       var responseBody = await response.stream.bytesToString();
       var jsonResponse = jsonDecode(responseBody);
 
-      userBW = (jsonResponse['userBCS'] as int?) ?? 0;
+      int? bwReceived = jsonResponse['userBW'] as int?;
+      int? bcsReceived = jsonResponse['userBCS'] as int?;
 
+      if (bwReceived != null || bcsReceived != null) {
+        if (bwReceived != null) {
+          userBW = bwReceived;
+        }
+        if (bcsReceived != null) {
+          userBCS = bcsReceived;
+        }
+      }
+
+      return true;
+    }
+    return false;
+  }
+
+  Future<bool> deleteMeasure() async {
+    var request = http.MultipartRequest(
+      'DELETE',
+      Uri.parse('http://10.0.2.2:9090/measures/$id'),
+    );
+
+    var response = await request.send();
+
+    if (response.statusCode == 200) {
       return true;
     }
     return false;

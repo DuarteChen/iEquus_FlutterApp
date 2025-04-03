@@ -1,5 +1,4 @@
 import 'dart:typed_data';
-import 'dart:convert';
 import 'package:equus/models/horse.dart';
 import 'package:equus/models/measure.dart';
 import 'package:equus/screens/appointment/slider_image_coordinates_picker.dart';
@@ -7,7 +6,6 @@ import 'package:equus/widgets/bcs_gauge.dart';
 import 'package:flutter/material.dart';
 import 'dart:io';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
 
 class CreateMeasureScreen extends StatefulWidget {
   const CreateMeasureScreen(
@@ -25,7 +23,6 @@ class CreateMeasureScreen extends StatefulWidget {
 }
 
 class CreateMeasureScreenState extends State<CreateMeasureScreen> {
-  final _formKey = GlobalKey<FormState>();
   File? _selectedImage;
   final List<Offset> _coordinates = [];
   int? imageWidth;
@@ -45,7 +42,14 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
   @override
   void initState() {
     super.initState();
-    //Future.delayed(Duration.zero, _pickImage);
+
+    measure = Measure(
+      id: 0,
+      date: DateTime.now(),
+      coordinates: [],
+      horseId: widget.horse.idHorse,
+      picturePath: '',
+    );
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -93,50 +97,14 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
 
   Future<void> _createMeasure(
       File picturePath, List<Offset> coordinates) async {
-    measure = Measure(
-        id: 0,
-        date: DateTime.now(),
-        coordinates: coordinates,
-        horseId: widget.horse.idHorse,
-        picturePath: picturePath.path);
+    measure!.picturePath = picturePath.path;
+    measure!.coordinates = coordinates;
 
-    if (await measure!.uploadToServer()) {
+    if (await measure!.firstUploadToServer()) {
       setState(() {
         algorithmBCS = measure!.algorithmBCS;
         algorithmBW = measure!.algorithmBW;
       });
-
-/*
-    var request = http.MultipartRequest(
-      'POST',
-      Uri.parse('http://10.0.2.2:9090/measures'),
-    );
-    request.fields['date'] = measure!.date.toString();
-    request.fields['coordinates'] =
-        measure!.convertOffsetsToJson(measure!.coordinates);
-    request.fields['horseId'] = measure!.horseId.toString();
-    request.files.add(
-      await http.MultipartFile.fromPath(
-        'picturePath',
-        picturePath.path,
-      ),
-    );
-
-    var response = await request.send();
-    if (response.statusCode == 201) {
-      var responseBody = await response.stream.bytesToString();
-      var jsonResponse = jsonDecode(responseBody);
-      setState(() {
-        measure!.id = (jsonResponse['measureID'] as int?) ?? 0;
-        measure!.algorithmBCS = (jsonResponse['algorithmBCS'] as int?) ?? 0;
-        measure!.algorithmBW = (jsonResponse['algorithmBW'] as int?) ?? 0;
-        measure!.userBCS = (jsonResponse['algorithmBW'] as int?) ?? 0;
-        measure!.userBW = (jsonResponse['algorithmBW'] as int?) ?? 0;
-
-        algorithmBCS = measure!.algorithmBCS;
-        algorithmBW = measure!.algorithmBW;
-      });
-      */
 
       ScaffoldMessenger.of(context).showSnackBar(
         const SnackBar(content: Text('Created successfully!')),
@@ -148,7 +116,19 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
     }
   }
 
-  Future<void> _saveMeasure() async {}
+  Future<void> _finalSave() async {
+    if (await measure!.editBWandBCS(_userBW, _userBCS)) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Saved successfully!')),
+      );
+    } else {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text('Failed to save!')),
+      );
+    }
+
+    Navigator.of(context).pop();
+  }
 
   void popUpBWOrBCS(BuildContext context, String bwOrBcs) {
     final TextEditingController controller = TextEditingController();
@@ -187,9 +167,6 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                   if (bwOrBcs == 'Body Weight') {
                     setState(() {
                       _userBW = number;
-                      if (measure != null) {
-                        measure!.editBW(number);
-                      }
                     });
                   } else if (bwOrBcs == 'Body Condition Score') {
                     if (number < 1 || number > 5) {
@@ -200,9 +177,6 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                     }
                     setState(() {
                       _userBCS = number;
-                      if (measure != null) {
-                        measure!.editBCS(number);
-                      }
                     });
                   }
                   Navigator.of(context).pop();
@@ -286,9 +260,7 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                 TextButton(
                   onPressed: () {
                     onBCSSelected(selectedBCS);
-                    if (measure != null) {
-                      measure!.editBCS(selectedBCS);
-                    }
+
                     Navigator.of(context).pop();
                   },
                   child: const Text('Confirm'),
@@ -496,6 +468,7 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
+            measure!.deleteMeasure();
             Navigator.pop(context);
           },
           icon: Icon(Icons.arrow_back),
@@ -504,9 +477,15 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
         centerTitle: true,
         actions: [
           IconButton(
-            onPressed: () {
-              _saveMeasure();
-            },
+            onPressed: _userBCS != null ||
+                    _userBW != null ||
+                    (measure!.algorithmBCS != null &&
+                        measure!.algorithmBW != null)
+                ? () {
+                    _finalSave();
+                    Navigator.of(context).pop();
+                  }
+                : null,
             icon: Icon(Icons.save_rounded),
           ),
         ],
