@@ -1,5 +1,5 @@
 import 'package:equus/screens/home/home_page.dart';
-import 'package:equus/screens/horses/horses_list.dart';
+import 'package:equus/screens/horses/horses_list_screen.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -14,13 +14,12 @@ class _HomeState extends State<Home> {
 
   void _onItemTapped(int index) {
     setState(() {
-      _selectedIndex = index; // Update the selected index
+      _selectedIndex = index;
     });
   }
 
   String _getAppBarTitle([int? requiredPage]) {
-    int index = requiredPage ??
-        _selectedIndex; // Use requiredPage if provided, otherwise _selectedIndex
+    int index = requiredPage ?? _selectedIndex;
     switch (index) {
       case 0:
         return 'Home';
@@ -41,20 +40,18 @@ class _HomeState extends State<Home> {
       body: IndexedStack(
         index: _selectedIndex,
         children: [
-          HomePage(),
-          HorsesList(),
+          const HomePage(),
+          const HorsesListScreen(),
           //OwnersPage(),
           //ProfilePage(),
         ],
       ),
       bottomNavigationBar: BottomNavigationBar(
-        //o widget da Bottom Navigation bar
         showSelectedLabels: true,
         showUnselectedLabels: true,
         enableFeedback: true,
         currentIndex: _selectedIndex,
-        onTap:
-            _onItemTapped, //isto referencia uma função. Quando um item na BottomNavigationBar é clicado, o widget BottomNavigationBar sabe qual a função chamar e adicona-lhe automaticamente o argumento da função
+        onTap: _onItemTapped,
         items: <BottomNavigationBarItem>[
           BottomNavigationBarItem(
             icon: const Icon(Icons.home),

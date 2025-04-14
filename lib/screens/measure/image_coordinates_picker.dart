@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:typed_data';
 import 'dart:ui' as ui;
-import 'package:equus/screens/appointment/coordinates_painter.dart';
+import 'package:equus/screens/measure/coordinates_painter.dart';
 import 'package:flutter/material.dart';
 
 class ImageCoordinatesPicker extends StatefulWidget {
@@ -12,7 +12,6 @@ class ImageCoordinatesPicker extends StatefulWidget {
   const ImageCoordinatesPicker({
     super.key,
     required this.image,
-
     required this.coordinates,
     required this.color,
   });
@@ -36,10 +35,8 @@ class _ImageCoordinatesPickerState extends State<ImageCoordinatesPicker> {
   Future<void> _addCoordinate(TapUpDetails details) async {
     final image = await decodeImageFromList(widget.image.readAsBytesSync());
 
-
-      imageWidth = image.width;
-      imageHeight = image.height;
-
+    imageWidth = image.width;
+    imageHeight = image.height;
 
     final RenderBox renderBox =
         _imageKey.currentContext!.findRenderObject() as RenderBox;
@@ -135,25 +132,25 @@ class _ImageCoordinatesPickerState extends State<ImageCoordinatesPicker> {
   @override
   Widget build(BuildContext context) {
     return GestureDetector(
-          onTapUp: _addCoordinate,
-          child: Stack(
-            children: [
-              Image.file(
-                _paintedImageFile!,
-                key: _imageKey,
-              ),
-              Positioned.fill(
-                child: CustomPaint(
-                  painter: CoordinatesPainter(
-                    widget.color,
-                    coordinates: widget.coordinates,
-                    imageWidth: imageWidth,
-                    imageHeight: imageHeight,
-                  ),
-                ),
-              ),
-            ],
+      onTapUp: _addCoordinate,
+      child: Stack(
+        children: [
+          Image.file(
+            _paintedImageFile!,
+            key: _imageKey,
           ),
-        );
+          Positioned.fill(
+            child: CustomPaint(
+              painter: CoordinatesPainter(
+                widget.color,
+                coordinates: widget.coordinates,
+                imageWidth: imageWidth,
+                imageHeight: imageHeight,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
   }
 }

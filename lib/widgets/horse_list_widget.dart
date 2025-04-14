@@ -3,14 +3,20 @@ import 'package:provider/provider.dart';
 import 'package:equus/providers/horse_provider.dart';
 import 'package:equus/screens/horses/horse_profile.dart';
 
-class HorsesList extends StatefulWidget {
-  const HorsesList({super.key});
+import 'package:equus/models/horse.dart';
+
+typedef HorseWidgetBuilder = Widget Function(Horse horse);
+
+class HorsesListWidget extends StatefulWidget {
+  final HorseWidgetBuilder widgetForSelectedScreen;
+
+  const HorsesListWidget({super.key, required this.widgetForSelectedScreen});
 
   @override
-  State<HorsesList> createState() => _HorsesListState();
+  State<HorsesListWidget> createState() => _HorsesListWidgetState();
 }
 
-class _HorsesListState extends State<HorsesList> {
+class _HorsesListWidgetState extends State<HorsesListWidget> {
   final TextEditingController _searchController = TextEditingController();
 
   @override
@@ -98,7 +104,8 @@ class _HorsesListState extends State<HorsesList> {
                         Navigator.push(
                           context,
                           MaterialPageRoute(
-                            builder: (context) => HorseProfile(horse: horse),
+                            builder: (context) =>
+                                widget.widgetForSelectedScreen(horse),
                           ),
                         );
                       },

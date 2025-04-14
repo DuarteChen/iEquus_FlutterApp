@@ -1,8 +1,8 @@
 import 'dart:io';
-
 import 'package:equus/models/horse.dart';
-import 'package:equus/models/veterinarian.dart';
 import 'package:flutter/material.dart';
+
+// Removed flutter_secure_storage import as it's no longer needed here
 
 class CreateAppointment extends StatefulWidget {
   final Horse horse;
@@ -16,26 +16,7 @@ class CreateAppointment extends StatefulWidget {
 }
 
 class CreateAppointmentState extends State<CreateAppointment> {
-  //Para iniciar um Veterinário enquanto não há lógica do Login ------------------------------
-  Veterinarian? vetObject;
-
-  Future<void> fetchVeterinarian(int id) async {
-    Veterinarian? vet = await Veterinarian.fromId(id);
-
-    if (vet != null) {
-      vetObject = vet;
-    }
-  }
-
-  @override
-  void initState() {
-    super.initState();
-    fetchVeterinarian(2);
-  }
-
-  //------------------------------------------------------------------------------------------
-
-  //Apoointment Data
+  // --- Appointment Data --- (Keep these as they are specific to this screen's state)
   DateTime appointmentDate = DateTime.now();
 
   int? lamenessLeftFront;
@@ -49,9 +30,10 @@ class CreateAppointmentState extends State<CreateAppointment> {
   String? muscleTensionStifness;
   String? muscleTensionR;
 
-  File? cbc;
+  File? cbc; // Assuming this is for a file upload specific to the appointment
 
   String? comment;
+  // ------------------------
 
   @override
   Widget build(BuildContext context) {
@@ -59,11 +41,12 @@ class CreateAppointmentState extends State<CreateAppointment> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          title: Text("New Appointment"),
+          // You could potentially add the vet's name or horse's name here
+          title: Text("Appointment for ${widget.horse.name}"),
           centerTitle: true,
           bottom: const TabBar(tabs: [
             Tab(text: "Main Info", icon: Icon(Icons.medical_information)),
-            Tab(text: "AI Measures", icon: Icon(Icons.stream)),
+            Tab(text: "AI Measures", icon: Icon(Icons.stream)), // Example tab
             Tab(text: "Comments", icon: Icon(Icons.comment)),
           ]),
         ),

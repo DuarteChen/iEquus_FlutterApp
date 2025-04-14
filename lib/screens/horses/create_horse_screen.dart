@@ -98,6 +98,7 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      resizeToAvoidBottomInset: false,
       body: Column(
         children: [
           // Profile Image

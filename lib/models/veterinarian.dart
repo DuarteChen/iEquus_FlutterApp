@@ -14,11 +14,13 @@ class Veterinarian extends Human {
     required super.idHuman,
   });
 
-  // Static factory method for asynchronous initialization
-  static Future<Veterinarian?> fromId(int id) async {
-    final url = Uri.parse('http://127.0.0.1:9090/veterinarian/$id');
+  static Future<Veterinarian?> fromId(String token) async {
+    final url = Uri.parse('http://10.0.2.2:9090/veterinarian');
     try {
-      final response = await http.get(url);
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $token'}, // Include JWT in headers
+      );
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
@@ -35,12 +37,12 @@ class Veterinarian extends Human {
 
   factory Veterinarian.fromMap(Map<String, dynamic> map) {
     return Veterinarian(
+      idHuman: map['idVeterinary'],
       name: map['name'],
       email: map['email'],
       phoneNumber: map['phoneNumber'],
       phoneCountryCode: map['phoneCountryCode'],
       idCedulaProfissional: map['idCedulaProfissional'],
-      idHuman: map['idHuman'],
     );
   }
 

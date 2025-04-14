@@ -1,7 +1,7 @@
 import 'dart:io';
 import 'dart:ui';
 
-import 'package:equus/screens/appointment/coordinates_painter.dart';
+import 'package:equus/screens/measure/coordinates_painter.dart';
 import 'package:flutter/material.dart';
 
 class SliderImageCoordinatesPicker extends StatefulWidget {

@@ -28,8 +28,7 @@ class Horse {
       name: json['name'],
       profilePicturePath: json['profilePicturePath'],
       birthDate: json['birthDate'] != null
-          ? DateFormat("EEE, dd MMM yyyy HH:mm:ss 'GMT'")
-              .parse(json['birthDate'])
+          ? DateTime.tryParse(json['birthDate'])
           : null,
       pictureRightFrontPath: json['pictureRightFrontPath'],
       pictureLeftFrontPath: json['pictureLeftFrontPath'],
