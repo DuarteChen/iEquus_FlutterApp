@@ -188,9 +188,7 @@ class Measure {
         final imageFile = File(picturePath);
         if (await imageFile.exists()) {
           request.files.add(
-            await http.MultipartFile.fromPath(
-                'picture', // Ensure this field name matches backend expectation
-                picturePath),
+            await http.MultipartFile.fromPath('picture', picturePath),
           );
         } else {
           debugPrint("Picture file not found at path: $picturePath");

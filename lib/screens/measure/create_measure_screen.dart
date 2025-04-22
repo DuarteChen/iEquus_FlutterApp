@@ -1,11 +1,12 @@
+import 'dart:io';
 import 'package:equus/models/horse.dart';
 import 'package:equus/models/measure.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
 import 'package:equus/screens/measure/slider_image_coordinates_picker.dart';
 import 'package:equus/widgets/bcs_gauge.dart';
 import 'package:flutter/material.dart';
-import 'dart:io';
 import 'package:image_picker/image_picker.dart';
+// Import for DateFormat
 import 'package:provider/provider.dart';
 
 class CreateMeasureScreen extends StatefulWidget {
@@ -13,23 +14,23 @@ class CreateMeasureScreen extends StatefulWidget {
     super.key,
     required this.horse,
     this.appointmentID,
-    // veterinarianID is no longer needed as we get it from provider
-    // this.veterinarianID
   });
 
   final Horse horse;
   final int? appointmentID;
-  // final int? veterinarianID; // Removed
 
   @override
   CreateMeasureScreenState createState() => CreateMeasureScreenState();
 }
 
 class CreateMeasureScreenState extends State<CreateMeasureScreen> {
-  File? _selectedImage;
+  File? _selectedImage; // For local file picking
+  File? _oldImage; // For local file picking
+  String? _networkImageUrl; // For URL from API
   final List<Offset> _coordinates = [];
   Measure? measure;
 
+  // State for user inputs and algorithm results
   int? _userBW;
   int? algorithmBW;
   int? _userBCS;
@@ -48,7 +49,7 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       date: DateTime.now(),
       coordinates: [],
       horseId: widget.horse.idHorse,
-      picturePath: '', // Will be set after image selection
+      picturePath: '', // Will be set after image selection/upload
       appointmentId: widget.appointmentID, // Use passed appointment ID
       // veterinarianId will be set during upload
     );
@@ -70,12 +71,13 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
     // Temporarily set the selected image for preview
     setState(() {
       _selectedImage = File(pickedImage.path);
+      _networkImageUrl = null; // Clear network URL when picking new local file
       // Reset results when a new image is picked
-      algorithmBCS = null;
-      algorithmBW = null;
-      _userBCS = null;
-      _userBW = null;
-      measure?.id = 0; // Reset measure ID as it needs re-upload
+      //algorithmBCS = null;
+      //algorithmBW = null;
+      //_userBCS = null;
+      //_userBW = null;
+      //measure?.id = 0; // Reset measure ID as it needs re-upload
     });
 
     // Navigate to coordinate picker
@@ -91,17 +93,23 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
     );
 
     // Handle result from coordinate picker
-    if (result != null && result['coordinates'] != null) {
-      _coordinates.clear(); // Clear previous coordinates
-      _coordinates.addAll(result['coordinates'].whereType<Offset>());
-      // Now create/upload the measure with the new image and coordinates
-      await _createMeasure(_selectedImage!, _coordinates);
+    if (result != null) {
+      if (result['coordinates'] != null && result['selectedImage'] != null) {
+        _selectedImage = result['selectedImage'];
+        _oldImage = _selectedImage;
+        _coordinates.clear(); // Clear previous coordinates
+        _coordinates.addAll(result['coordinates'].whereType<Offset>());
+        // Now create/upload the measure with the new image and coordinates
+        await _createMeasure(_selectedImage!, _coordinates);
+      }
     } else {
-      // User likely cancelled coordinate picking or returned without coordinates
-      setState(() {
+/*       setState(() {
         _selectedImage =
             null; // Clear image if coordinate picking was cancelled
         _coordinates.clear();
+      }); */
+      setState(() {
+        _selectedImage = _oldImage;
       });
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -120,7 +128,8 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       _isUploading = true; // Show loading indicator
     });
 
-    measure!.picturePath = pictureFile.path;
+    measure!.picturePath =
+        pictureFile.path; // Initially set local path for upload
     measure!.coordinates = coordinates;
 
     // Get the VeterinarianProvider instance
@@ -152,7 +161,12 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
         setState(() {
           algorithmBCS = measure!.algorithmBCS;
           algorithmBW = measure!.algorithmBW;
-          // The measure object's ID and picturePath might also be updated
+          // --- Store the network URL ---
+          _networkImageUrl =
+              measure!.picturePath; // picturePath should now hold the URL
+          _selectedImage = null; // Clear the local file reference
+          // --- End Store the network URL ---
+          // The measure object's ID and veterinarianId might also be updated
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Measure created successfully!')),
@@ -425,23 +439,27 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                   children: [
                     const Text("BCS", style: TextStyle(fontSize: 20)),
                     GestureDetector(
-                      // Disable edit if image not selected or uploading
-                      onTap: (_selectedImage == null || _isUploading)
-                          ? null
-                          : () => popUpBCS(
-                                context,
-                                (newBCS) {
-                                  setState(() {
-                                    _userBCS = newBCS;
-                                  });
-                                },
-                                _userBCS ??
-                                    algorithmBCS ??
-                                    0, // Pass current value
-                              ),
+                      // Disable edit if no image selected/loaded or uploading
+                      onTap:
+                          (_selectedImage == null && _networkImageUrl == null ||
+                                  _isUploading)
+                              ? null
+                              : () => popUpBCS(
+                                    context,
+                                    (newBCS) {
+                                      setState(() {
+                                        _userBCS = newBCS;
+                                      });
+                                    },
+                                    _userBCS ??
+                                        algorithmBCS ??
+                                        0, // Pass current value
+                                  ),
                       child: Icon(
                         Icons.edit,
-                        color: (_selectedImage == null || _isUploading)
+                        color: (_selectedImage == null &&
+                                    _networkImageUrl == null ||
+                                _isUploading)
                             ? Colors.grey // Disabled color
                             : Theme.of(context).primaryColor,
                       ),
@@ -484,13 +502,17 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                   children: [
                     const Text("kg", style: TextStyle(fontSize: 20)),
                     GestureDetector(
-                      // Disable edit if image not selected or uploading
-                      onTap: (_selectedImage == null || _isUploading)
-                          ? null
-                          : () => popUpBWOrBCS(context, "Body Weight"),
+                      // Disable edit if no image selected/loaded or uploading
+                      onTap:
+                          (_selectedImage == null && _networkImageUrl == null ||
+                                  _isUploading)
+                              ? null
+                              : () => popUpBWOrBCS(context, "Body Weight"),
                       child: Icon(
                         Icons.edit,
-                        color: (_selectedImage == null || _isUploading)
+                        color: (_selectedImage == null &&
+                                    _networkImageUrl == null ||
+                                _isUploading)
                             ? Colors.grey // Disabled color
                             : Theme.of(context).primaryColor,
                       ),
@@ -526,23 +548,55 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
         alignment: Alignment.center,
         child: _isUploading // Show loading indicator during initial upload
             ? const CircularProgressIndicator()
-            : _selectedImage != null
-                ? Image.file(
-                    _selectedImage!,
+            : _networkImageUrl != null // Check for network URL first
+                ? Image.network(
+                    // Use Image.network
+                    _networkImageUrl!,
                     fit: BoxFit.contain,
+                    loadingBuilder: (context, child, loadingProgress) {
+                      if (loadingProgress == null) return child;
+                      return Center(
+                        child: CircularProgressIndicator(
+                          value: loadingProgress.expectedTotalBytes != null
+                              ? loadingProgress.cumulativeBytesLoaded /
+                                  loadingProgress.expectedTotalBytes!
+                              : null,
+                        ),
+                      );
+                    },
                     errorBuilder: (context, error, stackTrace) {
-                      return const Text('Error loading image',
-                          style: TextStyle(color: Colors.red));
+                      return const Column(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.error_outline,
+                              color: Colors.red, size: 40),
+                          SizedBox(height: 8),
+                          Text('Error loading network image',
+                              style: TextStyle(color: Colors.red)),
+                        ],
+                      );
                     },
                   )
-                : const Column(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Icon(Icons.image_search, size: 50, color: Colors.grey),
-                      SizedBox(height: 8),
-                      Text('No measure image selected'),
-                    ],
-                  ),
+                : _selectedImage != null // Then check for local file
+                    ? Image.file(
+                        // Use Image.file
+                        _selectedImage!,
+                        fit: BoxFit.contain,
+                        errorBuilder: (context, error, stackTrace) {
+                          return const Text('Error loading local image',
+                              style: TextStyle(color: Colors.red));
+                        },
+                      )
+                    : const Column(
+                        // Placeholder if neither exists
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.image_search,
+                              size: 50, color: Colors.grey),
+                          SizedBox(height: 8),
+                          Text('No measure image selected'),
+                        ],
+                      ),
       ),
     );
     // --- End Define Image Container ---
@@ -613,17 +667,29 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
               // --- Button to Select/Change Image ---
               ElevatedButton.icon(
                 icon: const Icon(Icons.add_a_photo_outlined),
-                label: Text(_selectedImage == null
+                label: Text((_selectedImage == null && _networkImageUrl == null)
                     ? 'Select Measure Image'
                     : 'Change Measure Image'),
                 // Disable button while uploading/saving
                 onPressed: (_isUploading || _isSaving)
                     ? null
                     : () {
-                        if (measure != null || measure!.id != 0) {
-                          measure!.deleteMeasure();
+                        // If changing image, delete the previous measure first
+                        if (measure != null && measure!.id != 0) {
+                          measure!.deleteMeasure().then((_) {
+                            // Proceed to pick new image regardless of delete success/failure for now
+                            // Could add error handling here if delete is critical
+                            _showImageSourceDialog(context);
+                          }).catchError((e) {
+                            debugPrint(
+                                "Error deleting previous measure before picking new image: $e");
+                            // Still allow picking a new image even if delete failed
+                            _showImageSourceDialog(context);
+                          });
+                        } else {
+                          // If no measure exists yet, just show the dialog
+                          _showImageSourceDialog(context);
                         }
-                        _showImageSourceDialog(context);
                       },
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),

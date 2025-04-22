@@ -159,44 +159,67 @@ class _SliderImageCoordinatesPickerState
     });
   }
 
-  void _goToNextPage() async {
-    setState(() {
-      if (_currentPageIndex == 0) {
-        localCoordinates[0] = screen0Coordinates[0];
-        localCoordinates[1] = screen0Coordinates[1];
-        _currentPageIndex++;
-      } else if (_currentPageIndex == 1) {
-        localCoordinates[2] = screen1Coordinates[0];
-        localCoordinates[3] = screen1Coordinates[1];
-        _currentPageIndex++;
-      } else if (_currentPageIndex == 2) {
-        localCoordinates[4] = screen2Coordinates[0];
-        localCoordinates[5] = screen2Coordinates[1];
-        _currentPageIndex++;
-      } else if (_currentPageIndex == 3) {
-        localCoordinates[6] = screen3Coordinates[0];
-        localCoordinates[7] = screen3Coordinates[1];
-        _currentPageIndex++;
-      } else if (_currentPageIndex == 4) {
-        localCoordinates[8] = screen4Coordinates[0];
-        localCoordinates[9] = screen4Coordinates[1];
-        _currentPageIndex++;
-      } else if (_currentPageIndex == 5) {
-        localCoordinates[10] = screen5Coordinates[0];
-        localCoordinates[11] = screen5Coordinates[1];
-        _currentPageIndex++;
-      } else if (_currentPageIndex == 6) {
-        localCoordinates[12] = screen6Coordinates[0];
-        localCoordinates[13] = screen6Coordinates[1];
-        _currentPageIndex++;
-      }
-    });
-    if (_currentPageIndex == 7) {
-      await saveImageWithAllCoordinates();
-      setState(() {
-        _currentPageIndex = 7; // Ensure the correct screen is shown
-      }); // Rebuild the UI after saving the image
+  Future<void> _goToNextPage() async {
+    // --- Start of changes ---
+    bool shouldSaveImage = false;
+    int nextPageIndex = _currentPageIndex;
+
+    // Logic to update localCoordinates based on the current page
+    if (_currentPageIndex == 0 && screen0Coordinates.length == 2) {
+      localCoordinates[0] = screen0Coordinates[0];
+      localCoordinates[1] = screen0Coordinates[1];
+      nextPageIndex++;
+    } else if (_currentPageIndex == 1 && screen1Coordinates.length == 2) {
+      localCoordinates[2] = screen1Coordinates[0];
+      localCoordinates[3] = screen1Coordinates[1];
+      nextPageIndex++;
+    } else if (_currentPageIndex == 2 && screen2Coordinates.length == 2) {
+      localCoordinates[4] = screen2Coordinates[0];
+      localCoordinates[5] = screen2Coordinates[1];
+      nextPageIndex++;
+    } else if (_currentPageIndex == 3 && screen3Coordinates.length == 2) {
+      localCoordinates[6] = screen3Coordinates[0];
+      localCoordinates[7] = screen3Coordinates[1];
+      nextPageIndex++;
+    } else if (_currentPageIndex == 4 && screen4Coordinates.length == 2) {
+      localCoordinates[8] = screen4Coordinates[0];
+      localCoordinates[9] = screen4Coordinates[1];
+      nextPageIndex++;
+    } else if (_currentPageIndex == 5 && screen5Coordinates.length == 2) {
+      localCoordinates[10] = screen5Coordinates[0];
+      localCoordinates[11] = screen5Coordinates[1];
+      nextPageIndex++;
+    } else if (_currentPageIndex == 6 && screen6Coordinates.length == 2) {
+      localCoordinates[12] = screen6Coordinates[0];
+      localCoordinates[13] = screen6Coordinates[1];
+      nextPageIndex++;
+      // Mark that we need to save the image after this state update
+      shouldSaveImage = true;
     }
+
+    // Update the state for coordinates *before* potentially saving
+    setState(() {
+      // Only update the index if it changed and we are not saving yet
+      if (!shouldSaveImage) {
+        _currentPageIndex = nextPageIndex;
+      }
+      // The localCoordinates are updated directly above,
+      // so setState will reflect those changes.
+    });
+
+    // If we reached the last coordinate page, save the image *after* state update
+    if (shouldSaveImage) {
+      // Show loading indicator while saving
+      setState(() => isLoading = true);
+      await saveImageWithAllCoordinates(); // Wait for saving to finish
+      // The saveImageWithAllCoordinates function already calls setState
+      // to update newImageLocal and set isLoading = false.
+      // Now, update the page index to show the result screen.
+      setState(() {
+        _currentPageIndex = nextPageIndex; // Should be 7 now
+      });
+    }
+    // --- End of changes ---
   }
 
   bool pageCoordinatesSizeCheck() {
@@ -292,7 +315,7 @@ class _SliderImageCoordinatesPickerState
   }
 
   Future<void> addCoordinate(TapDownDetails details, GlobalKey imageKey) async {
-    setState(() => isLoading = false);
+    setState(() => isLoading = true);
     List<Offset> screenCoordinates = [];
 
     if (_currentPageIndex == 0) {
@@ -358,53 +381,82 @@ class _SliderImageCoordinatesPickerState
   }
 
   Future<void> saveImageWithAllCoordinates() async {
-    setState(() => isLoading = true);
+    // No need to set isLoading = true here, it's done in _goToNextPage
 
     final recorder = PictureRecorder();
     final canvas = Canvas(recorder);
     final image =
         await decodeImageFromList(widget.selectedImage.readAsBytesSync());
 
-    // Ensure localCoordinates has an even number of elements (pairs)
-    if (localCoordinates.length % 2 != 0) {
-      setState(() => isLoading = false);
-      return; // Skip if pairs are incomplete
+    // Ensure image dimensions are available if not loaded before (safety check)
+    if (imageWidth == 0 || imageHeight == 0) {
+      imageWidth = image.width;
+      imageHeight = image.height;
     }
 
-    // Draw the image first
     canvas.drawImage(image, Offset.zero, Paint());
 
-    // Draw circles for each pair of coordinates
-    for (int i = 0; i < localCoordinates.length; i += 2) {
-      final paint = Paint()
-        ..color = screenColors[i ~/ 2 % screenColors.length]
-        ..style = PaintingStyle.fill
-        ..strokeWidth = 5;
+    // Check if all coordinates are actually filled before drawing
+    if (allCoordinatesFilled()) {
+      for (int i = 0; i < localCoordinates.length; i += 2) {
+        if (localCoordinates[i] != null && localCoordinates[i + 1] != null) {
+          final paint = Paint()
+            ..color = screenColors[i ~/ 2 % screenColors.length]
+            // Make lines thicker for better visibility
+            ..strokeWidth = (imageWidth * 0.01)
+                .clamp(5.0, 15.0) // Example: 1% of image width, clamped
+            ..strokeCap = StrokeCap.round; // Smoother line ends
 
-      canvas.drawCircle(localCoordinates[i]!, 10, paint);
-      canvas.drawCircle(localCoordinates[i + 1]!, 10, paint);
+          // Draw Line
+          paint.style = PaintingStyle.stroke;
+          canvas.drawLine(
+              localCoordinates[i]!, localCoordinates[i + 1]!, paint);
 
-      canvas.drawLine(localCoordinates[i]!, localCoordinates[i + 1]!, paint);
+          // Draw Circles (Points)
+          paint.style = PaintingStyle.fill;
+          // Make circle radius relative to image size or line thickness
+          double circleRadius = (paint.strokeWidth * 1.5).clamp(10.0, 25.0);
+          canvas.drawCircle(localCoordinates[i]!, circleRadius, paint);
+          canvas.drawCircle(localCoordinates[i + 1]!, circleRadius, paint);
+        }
+      }
+    } else {
+      // Handle the case where not all coordinates are filled, maybe log an error
+      // or skip drawing? For now, it will just save the original image if this happens.
+      print("Warning: Not all coordinates were filled when trying to save.");
     }
 
-    // Convert canvas to an image
     final img =
         await recorder.endRecording().toImage(image.width, image.height);
     final byteData = await img.toByteData(format: ImageByteFormat.png);
-    final buffer = byteData!.buffer.asUint8List();
+
+    // Ensure byteData is not null before proceeding
+    if (byteData == null) {
+      print("Error: Failed to get byte data from image.");
+      setState(() => isLoading = false); // Still need to turn off loading
+      return;
+    }
+
+    final buffer = byteData.buffer.asUint8List();
 
     // Save the updated image
-    final newImagePath =
-        widget.selectedImage.path.replaceAll('.png', '_updated.png');
+    // Consider using path_provider for a more robust path
+    final newImagePath = widget.selectedImage.path
+        .replaceAll('.png', '_updated.png')
+        .replaceAll('.jpg', '_updated.jpg') // Handle jpg too
+        .replaceAll('.jpeg', '_updated.jpeg');
     File newImageFile = File(newImagePath);
-    await newImageFile.writeAsBytes(buffer);
-    setState(() {
-      newImageLocal = newImageFile;
-    });
-
-    setState(() {
-      isLoading = false;
-    });
+    try {
+      await newImageFile.writeAsBytes(buffer);
+      // Update state only after successful write
+      setState(() {
+        newImageLocal = newImageFile;
+        isLoading = false;
+      });
+    } catch (e) {
+      print("Error saving image: $e");
+      setState(() => isLoading = false); // Turn off loading on error
+    }
   }
 
   void _showHelpPopup(BuildContext context) {
@@ -468,7 +520,7 @@ class _SliderImageCoordinatesPickerState
       appBar: AppBar(
         leading: IconButton(
           onPressed: () {
-            Navigator.pop(context, result);
+            Navigator.pop(context, null);
           },
           icon: const Icon(Icons.arrow_back),
         ),
@@ -748,7 +800,7 @@ class _SliderImageCoordinatesPickerState
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          if (newImageLocal != null)
+          if (newImageLocal != null && !isLoading)
             Container(
               decoration: BoxDecoration(
                 borderRadius: BorderRadius.circular(12),
@@ -761,13 +813,14 @@ class _SliderImageCoordinatesPickerState
                   ),
                 ],
               ),
-              clipBehavior:
-                  Clip.hardEdge, // Ensures the image respects border radius
+              clipBehavior: Clip.hardEdge,
               child: ClipRRect(
                 borderRadius: BorderRadius.circular(12),
                 child: Image.file(newImageLocal!),
               ),
-            ),
+            )
+          else
+            const Center(child: CircularProgressIndicator()),
           const SizedBox(height: 10),
           const Text(
             'Selected Coordinates:',

@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:equus/providers/horse_provider.dart';
-import 'package:equus/screens/horses/horse_profile.dart';
 
 import 'package:equus/models/horse.dart';
 
