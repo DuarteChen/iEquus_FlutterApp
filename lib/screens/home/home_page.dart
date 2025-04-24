@@ -1,3 +1,4 @@
+import 'package:equus/providers/hospital_provider.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
 import 'package:equus/screens/appointment/horse_selector.dart';
 import 'package:equus/screens/horses/create_horse_screen.dart';
@@ -18,8 +19,12 @@ class _HomePageState extends State<HomePage> {
 
   Future<void> _logout() async {
     await storage.delete(key: 'jwt');
+
+    final hospitalProvider =
+        Provider.of<HospitalProvider>(context, listen: false);
+
     Provider.of<VeterinarianProvider>(context, listen: false)
-        .clearVeterinarian();
+        .clear(hospitalProvider);
     if (mounted) {
       Navigator.pushReplacementNamed(context, '/login');
     }

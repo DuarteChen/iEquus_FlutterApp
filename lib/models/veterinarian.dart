@@ -1,9 +1,11 @@
 import 'dart:convert';
+import 'package:equus/models/hospital.dart';
 import 'package:http/http.dart' as http;
 import 'package:equus/models/human.dart';
 
 class Veterinarian extends Human {
   String idCedulaProfissional;
+  Hospital hospital;
 
   Veterinarian({
     required super.name,
@@ -12,6 +14,7 @@ class Veterinarian extends Human {
     super.phoneCountryCode,
     required this.idCedulaProfissional,
     required super.idHuman,
+    required this.hospital,
   });
 
   static Future<Veterinarian?> fromId(String token) async {
@@ -19,7 +22,7 @@ class Veterinarian extends Human {
     try {
       final response = await http.get(
         url,
-        headers: {'Authorization': 'Bearer $token'}, // Include JWT in headers
+        headers: {'Authorization': 'Bearer $token'},
       );
 
       if (response.statusCode == 200) {
@@ -43,13 +46,15 @@ class Veterinarian extends Human {
       phoneNumber: map['phoneNumber'],
       phoneCountryCode: map['phoneCountryCode'],
       idCedulaProfissional: map['idCedulaProfissional'],
+      hospital: Hospital.fromMap(map['hospital']),
     );
   }
 
   @override
   Map<String, dynamic> toMap() {
-    var map = super.toMap();
+    final map = super.toMap();
     map['idCedulaProfissional'] = idCedulaProfissional;
+    map['hospital'] = hospital?.toMap();
     return map;
   }
 }

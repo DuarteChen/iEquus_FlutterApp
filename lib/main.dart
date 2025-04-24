@@ -1,4 +1,5 @@
 import 'package:equus/providers/horse_provider.dart';
+import 'package:equus/providers/hospital_provider.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
 import 'package:equus/screens/home/home.dart';
 import 'package:equus/screens/login/login_screen.dart';
@@ -24,6 +25,7 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => HorseProvider()),
+          ChangeNotifierProvider(create: (_) => HospitalProvider()),
           ChangeNotifierProvider(create: (_) => VeterinarianProvider()),
         ],
         child: MyApp(initialRoute: initialRoute),
@@ -40,8 +42,11 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     if (initialRoute == '/home') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
+        final hospitalProvider =
+            Provider.of<HospitalProvider>(context, listen: false);
         Provider.of<VeterinarianProvider>(context, listen: false)
-            .loadVeterinarianData();
+            .loadVeterinarianData(hospitalProvider);
+
         Provider.of<HorseProvider>(context, listen: false).loadHorses();
       });
     }
@@ -68,14 +73,11 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const Home(),
       },
-      // --- Add these lines ---
       localizationsDelegates: const [
-        AppLocalizations.delegate, // Your app's specific translations
-        GlobalMaterialLocalizations.delegate, // Built-in Material localizations
-        GlobalWidgetsLocalizations
-            .delegate, // Built-in Widget localizations (text direction, etc.)
-        GlobalCupertinoLocalizations
-            .delegate, // Built-in Cupertino localizations
+        AppLocalizations.delegate,
+        GlobalMaterialLocalizations.delegate,
+        GlobalWidgetsLocalizations.delegate,
+        GlobalCupertinoLocalizations.delegate,
       ],
       supportedLocales: const [
         Locale('en'),

@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:equus/models/veterinarian.dart';
+import 'package:equus/providers/hospital_provider.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:http/http.dart' as http;
@@ -58,8 +59,10 @@ class _LoginScreenState extends State<LoginScreen> {
         // Consider moving this fetch logic to the provider itself (e.g., provider.loginAndFetchData)
         final veterinarian = await _fetchVeterinarianData(token);
         if (veterinarian != null) {
+          final hospitalProvider =
+              Provider.of<HospitalProvider>(context, listen: false);
           Provider.of<VeterinarianProvider>(context, listen: false)
-              .setVeterinarian(veterinarian);
+              .setVeterinarian(veterinarian, hospitalProvider);
           if (mounted) {
             // Use pushReplacementNamed to prevent going back to login screen
             Navigator.pushReplacementNamed(context, '/home');

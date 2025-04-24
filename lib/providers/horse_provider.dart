@@ -4,7 +4,6 @@ import 'package:equus/models/client.dart';
 import 'package:flutter/material.dart';
 import 'package:equus/models/horse.dart';
 import 'package:equus/services/horse_service.dart';
-// Removed 'package:http/http.dart' as http; - No longer needed here
 
 class HorseProvider extends ChangeNotifier {
   final HorseService _horseService = HorseService();
@@ -13,8 +12,6 @@ class HorseProvider extends ChangeNotifier {
 
   List<Horse> get horses => _filteredHorses;
 
-  // Consider lazy loading horses instead of loading in constructor
-  // if the horse list isn't needed immediately on app start.
   HorseProvider() {
     loadHorses();
   }
