@@ -28,14 +28,12 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
   ImageProvider<Object>? _pictureRightHindProvider;
   ImageProvider<Object>? _pictureLeftHindProvider;
 
-  // Files to store the picked image files for upload
   File? _profilePictureFile;
   File? _pictureRightFrontFile;
   File? _pictureLeftFrontFile;
   File? _pictureRightHindFile;
   File? _pictureLeftHindFile;
 
-  //esta função recebe uma função que atualiza que corre dentro desta função ;)
   Future<void> pickImage(
       Function(File, ImageProvider<Object>) updateImageProvider,
       ImageSource source) async {
@@ -44,11 +42,9 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
 
     if (pickedImage != null) {
       File imageFile = File(pickedImage.path);
-      ImageProvider<Object> imageProvider =
-          FileImage(imageFile); // Create ImageProvider
+      ImageProvider<Object> imageProvider = FileImage(imageFile);
       setState(() {
-        updateImageProvider(imageFile,
-            imageProvider); // Call update function with both File and ImageProvider
+        updateImageProvider(imageFile, imageProvider);
       });
     }
   }

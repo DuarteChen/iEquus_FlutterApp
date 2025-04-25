@@ -68,20 +68,11 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       return; // User cancelled
     }
 
-    // Temporarily set the selected image for preview
     setState(() {
       _selectedImage = File(pickedImage.path);
-      _networkImageUrl = null; // Clear network URL when picking new local file
-      // Reset results when a new image is picked
-      //algorithmBCS = null;
-      //algorithmBW = null;
-      //_userBCS = null;
-      //_userBW = null;
-      //measure?.id = 0; // Reset measure ID as it needs re-upload
+      _networkImageUrl = null;
     });
 
-    // Navigate to coordinate picker
-    // Use context.mounted check after await
     if (!context.mounted) return;
     final Map<String, dynamic>? result = await Navigator.push(
       context,
@@ -92,14 +83,13 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       ),
     );
 
-    // Handle result from coordinate picker
     if (result != null) {
       if (result['coordinates'] != null && result['selectedImage'] != null) {
         _selectedImage = result['selectedImage'];
         _oldImage = _selectedImage;
         _coordinates.clear(); // Clear previous coordinates
         _coordinates.addAll(result['coordinates'].whereType<Offset>());
-        // Now create/upload the measure with the new image and coordinates
+
         await _createMeasure(_selectedImage!, _coordinates);
       }
     } else {
@@ -125,14 +115,12 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
     if (measure == null) return; // Should not happen, but safety check
 
     setState(() {
-      _isUploading = true; // Show loading indicator
+      _isUploading = true;
     });
 
-    measure!.picturePath =
-        pictureFile.path; // Initially set local path for upload
+    measure!.picturePath = pictureFile.path;
     measure!.coordinates = coordinates;
 
-    // Get the VeterinarianProvider instance
     final vetProvider =
         Provider.of<VeterinarianProvider>(context, listen: false);
     final int? currentVetId = vetProvider.veterinarian?.idHuman;
@@ -151,35 +139,29 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
     }
 
     try {
-      // Call the upload method, passing the vet ID
       bool success = await measure!.firstUploadToServer(
         currentVeterinarianId: currentVetId,
       );
 
       if (success && mounted) {
-        // Update state with results from the uploaded measure object
         setState(() {
           algorithmBCS = measure!.algorithmBCS;
           algorithmBW = measure!.algorithmBW;
           // --- Store the network URL ---
-          _networkImageUrl =
-              measure!.picturePath; // picturePath should now hold the URL
-          _selectedImage = null; // Clear the local file reference
+          _networkImageUrl = measure!.picturePath;
+          _selectedImage = null;
           // --- End Store the network URL ---
-          // The measure object's ID and veterinarianId might also be updated
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Measure created successfully!')),
         );
       }
-      // No explicit 'else' needed, exception is thrown on failure
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(content: Text('Failed to create measure: ${e.toString()}')),
         );
       }
-      // Optionally reset state if upload fails critically
       // setState(() { _selectedImage = null; _coordinates.clear(); });
     } finally {
       if (mounted) {
@@ -209,7 +191,7 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Saved successfully!')),
         );
-        Navigator.of(context).pop(); // Pop only on successful save
+        Navigator.of(context).pop();
       }
     } catch (e) {
       if (mounted) {
@@ -229,7 +211,7 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
   // --- Popups remain largely the same ---
   void popUpBWOrBCS(BuildContext context, String bwOrBcs) {
     final TextEditingController controller = TextEditingController();
-    String? errorText; // To show validation errors
+    String? errorText;
 
     if (bwOrBcs == 'Body Weight') {
       controller.text = _userBW?.toString() ?? '';
@@ -240,7 +222,6 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
     showDialog(
       context: context,
       builder: (context) {
-        // Use StatefulBuilder to manage error text state within the dialog
         return StatefulBuilder(builder: (context, setDialogState) {
           return AlertDialog(
             title: Text('Edit $bwOrBcs'),
@@ -587,15 +568,9 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                               style: TextStyle(color: Colors.red));
                         },
                       )
-                    : const Column(
-                        // Placeholder if neither exists
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.image_search,
-                              size: 50, color: Colors.grey),
-                          SizedBox(height: 8),
-                          Text('No measure image selected'),
-                        ],
+                    : Image.asset(
+                        'assets/images/horseAppointmentPlaceHolder.png',
+                        fit: BoxFit.contain,
                       ),
       ),
     );
