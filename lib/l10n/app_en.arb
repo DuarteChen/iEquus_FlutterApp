@@ -1,0 +1,290 @@
+{
+    "@@locale": "en",
+
+    "appTitle": "iEquus",
+
+    "loading": "Loading...",
+    "error": "Error",
+    "close": "Close",
+    "cancel": "Cancel",
+    "confirm": "Confirm",
+    "save": "Save",
+    "done": "Done",
+    "next": "Next",
+    "previous": "Previous",
+    "help": "Help",
+    "undo": "Undo",
+    "select": "Select",
+    "change": "Change",
+    "add": "Add",
+    "edit": "Edit",
+    "delete": "Delete",
+
+    "loginTitle": "Login",
+    "loginEmailLabel": "Email",
+    "loginPasswordLabel": "Password",
+    "loginEmailHint": "Please enter your email",
+    "loginPasswordHint": "Please enter your password",
+    "loginEmailValidation": "Please enter a valid email address",
+    "loginPasswordValidation": "Please enter your password",
+    "loginButton": "Login",
+    "loginFailed": "Login failed. Status code: {statusCode}",
+    "@loginFailed": {
+        "description": "Error message when login fails with a status code",
+        "placeholders": {
+            "statusCode": {
+                "type": "int",
+                "example": "401"
+            }
+        }
+    },
+    "loginFailedWithMessage": "Login failed: {message}",
+    "@loginFailedWithMessage": {
+        "description": "Error message when login fails with a specific message from the server",
+        "placeholders": {
+            "message": {
+                "type": "String",
+                "example": "Invalid credentials"
+            }
+        }
+    },
+    "loginErrorGeneric": "An error occurred: {errorDetails}",
+    "@loginErrorGeneric": {
+        "description": "Generic error message during login",
+        "placeholders": {
+            "errorDetails": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "loginSuccessUserDataError": "Login successful, but failed to load user data.",
+
+    "homeTitle": "Home",
+    "horsesTitle": "Horses",
+    "ownersTitle": "Owners",
+    "profileTitle": "Profile",
+    "logout": "Logout",
+    "welcome": "Welcome,",
+    "appointments": "Appointments",
+    "services": "Services",
+    "newAppointment": "Appointment",
+    "newMeasure": "Measure",
+    "newXRay": "X-Ray",
+    "newHorse": "New Horse",
+    "newClient": "New Client",
+
+    "createHorseTitle": "Create a new Horse",
+    "horseNameLabel": "Horse Name",
+    "horseNameValidation": "Please enter the horse's name",
+    "dateOfBirthLabel": "Date of Birth",
+    "selectDate": "Select Date",
+    "horseLegIdentification": "Horse leg identification",
+    "front": "Front",
+    "hind": "Hind",
+    "horseCreatedSuccess": "Horse created successfully!",
+    "horseCreationFailed": "Failed to create horse!",
+
+    "horseProfileOwners": "Owners",
+    "horseProfileCareTakers": "Care Takers",
+    "horseProfileBasicInfo": "Basic Info",
+    "horseProfileBirthday": "Birthday",
+    "horseProfileNotSpecified": "Not specified",
+    "horseProfileErrorLoading": "Error loading!",
+    "horseProfileErrorInitializing": "Error initializing Horse Profile: {errorDetails}",
+    "@horseProfileErrorInitializing": {
+        "description": "Error message when horse profile fails to load initial data",
+        "placeholders": {
+            "errorDetails": {
+                "type": "String",
+                "example": "Network timeout"
+            }
+        }
+    },
+    "horsePhotoUpdateSuccess": "Horse photo updated successfully!",
+    "horsePhotoUpdateFailed": "Failed to update horse photo",
+    "noOwnersAssigned": "No Owners assigned",
+    "noCareTakersAssigned": "No Care Takers assigned",
+    "navigateToClientProfileTodo": "Navigate to {clientName}'s profile (TODO)",
+    "@navigateToClientProfileTodo": {
+        "description": "Placeholder message for navigating to a client's profile",
+        "placeholders": {
+            "clientName": {
+                "type": "String",
+                "example": "John Doe"
+            }
+        }
+    },
+
+    "createAppointmentTitle": "Appointment for {horseName}",
+    "@createAppointmentTitle": {
+        "description": "App bar title for creating an appointment for a specific horse",
+        "placeholders": {
+            "horseName": {
+                "type": "String",
+                "example": "Spirit"
+            }
+        }
+    },
+    "appointmentMainInfoTab": "Main Info",
+    "appointmentAIMeasuresTab": "AI Measures",
+    "appointmentCommentsTab": "Comments",
+
+    "appointmentMainInfoTitle": "Appointment Main Info",
+    "appointmentDateLabel": "Appointment Date: {date}",
+    "@appointmentDateLabel": {
+        "description": "Label showing the date of the appointment",
+        "placeholders": {
+            "date": {
+                "type": "DateTime",
+                "format": "yMd"
+            }
+        }
+    },
+
+    "createMeasureTitle": "Measure for {horseName}",
+    "@createMeasureTitle": {
+        "description": "App bar title for creating a measure for a specific horse",
+        "placeholders": {
+            "horseName": {
+                "type": "String",
+                "example": "Spirit"
+            }
+        }
+    },
+    "selectMeasureImage": "Select Measure Image",
+    "changeMeasureImage": "Change Measure Image",
+    "coordinateSelectionCancelled": "Coordinate selection cancelled or failed.",
+    "measureCreatedSuccess": "Measure created successfully!",
+    "measureCreationFailed": "Failed to create measure: {errorDetails}",
+    "@measureCreationFailed": {
+        "description": "Error message when measure creation fails",
+        "placeholders": {
+            "errorDetails": {
+                "type": "String",
+                "example": "Upload error"
+            }
+        }
+    },
+    "measureSaveSuccess": "Saved successfully!",
+    "measureSaveFailed": "Failed to save: {errorDetails}",
+    "@measureSaveFailed": {
+        "description": "Error message when saving measure edits fails",
+        "placeholders": {
+            "errorDetails": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "measureSaveErrorNoImage": "Please select an image first.",
+    "measureDeleteError": "Failed to discard measure: {errorDetails}",
+     "@measureDeleteError": {
+        "description": "Error message when deleting a measure fails",
+        "placeholders": {
+            "errorDetails": {
+                "type": "String",
+                "example": "Server error"
+            }
+        }
+    },
+    "editValueTitle": "Edit {valueName}",
+    "@editValueTitle": {
+        "description": "Dialog title for editing a value like BCS or BW",
+        "placeholders": {
+            "valueName": {
+                "type": "String",
+                "example": "Body Weight"
+            }
+        }
+    },
+    "enterValidNumber": "Please enter a valid number.",
+    "bcsRangeError": "BCS must be between 1 and 5.",
+    "weightNegativeError": "Weight cannot be negative.",
+    "bcsLabel": "BCS",
+    "kgLabel": "kg",
+    "bodyWeight": "Body Weight",
+    "bodyConditionScore": "Body Condition Score",
+    "noMeasureImageSelected": "No measure image selected",
+    "errorLoadingNetworkImage": "Error loading network image",
+    "errorLoadingLocalImage": "Error loading local image",
+    "errorGetVetProfile": "Error: Could not get veterinarian profile.",
+
+    "sliderLineLabel": "Line {lineNumber}/7",
+    "@sliderLineLabel": {
+        "description": "Label showing the current line number being edited in the slider",
+        "placeholders": {
+            "lineNumber": {
+                "type": "int",
+                "example": "1"
+            }
+        }
+    },
+    "sliderResultTitle": "Result",
+    "sliderNoHelpImage": "No help image available for this page.",
+    "sliderWarningNotAllCoordinatesFilled": "Warning: Not all coordinates were filled when trying to save.",
+    "sliderErrorSavingImage": "Error saving image: {errorDetails}",
+    "@sliderErrorSavingImage": {
+        "description": "Error message when saving the image with coordinates fails",
+        "placeholders": {
+            "errorDetails": {
+                "type": "String",
+                "example": "File system error"
+            }
+        }
+    },
+    "sliderErrorEncodingImage": "Error: Failed to get byte data from image.",
+    "sliderSelectedCoordinatesTitle": "Selected Coordinates:",
+    "sliderNotEnoughCoordinates": "Not enough coordinates selected.",
+    "sliderCoordinatePoint": "Coordinate {index}: ({dx}, {dy})",
+    "@sliderCoordinatePoint": {
+        "description": "Displaying a specific coordinate point",
+        "placeholders": {
+            "index": { "type": "int", "example": "1" },
+            "dx": { "type": "String", "example": "123.45" },
+            "dy": { "type": "String", "example": "678.90" }
+        }
+    },
+    "measureHeightWithers": "Height at the withers",
+    "measureCenterAbdomen": "Center of the abdomen",
+    "measureGirthWithers": "Girth area to withers",
+    "measureGirthBelly": "Girth area to the back of the belly",
+    "measureNeckWidth": "Neck width",
+    "measureNeckLength": "Neck length",
+    "measureBodyLength": "Body length",
+
+    "xrayTitle": "X-Ray for {horseName}",
+    "@xrayTitle": {
+        "description": "App bar title for the X-Ray creation screen",
+        "placeholders": {
+            "horseName": {
+                "type": "String",
+                "example": "Spirit"
+            }
+        }
+    },
+    "selectXRayImage": "Select X-Ray Image",
+    "changeXRayImage": "Change X-Ray Image",
+    "seeXRay": "See X-Ray",
+    "uploadingXRay": "Uploading X-Ray...",
+    "xrayUploadSuccess": "X-Ray uploaded successfully!",
+    "xrayUploadFailed": "Upload failed: {errorDetails}",
+    "@xrayUploadFailed": {
+        "description": "Error message when X-Ray upload fails",
+        "placeholders": {
+            "errorDetails": {
+                "type": "String",
+                "example": "Network error"
+            }
+        }
+    },
+    "xrayUploadAuthError": "Authentication error. Please login again.",
+    "xrayUploadNoUrlError": "API did not return an image URL.",
+    "xrayUploadUnauthorized": "Unauthorized access uploading X-Ray.",
+    "xraySelectImageFirst": "Please select an image first.",
+    "noXrayImageSelected": "No X-Ray image selected",
+
+    "chooseFromGallery": "Choose from Gallery",
+    "takeAPhoto": "Take a Photo"
+
+}

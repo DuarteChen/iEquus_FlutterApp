@@ -1,10 +1,12 @@
 class Human {
+  int idHuman;
   String name;
   String? email;
   String? phoneNumber;
   String? phoneCountryCode;
 
   Human({
+    required this.idHuman,
     required this.name,
     this.email,
     this.phoneNumber,
