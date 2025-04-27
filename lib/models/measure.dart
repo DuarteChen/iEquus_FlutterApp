@@ -37,7 +37,6 @@ class Measure {
   });
 
   factory Measure.fromJson(Map<String, dynamic> json) {
-    // Assuming coordinates are stored as a JSON string in the DB/API response
     List<Offset> parsedCoordinates = [];
     if (json['coordinates'] is String) {
       try {
@@ -45,13 +44,10 @@ class Measure {
             Measure.convertJsonToOffsetsStatic(json['coordinates']);
       } catch (e) {
         debugPrint("Error parsing coordinates from JSON: $e");
-        // Handle error or set default empty list
       }
     } else if (json['coordinates'] is List) {
-      // Handle if API directly returns a list of maps (less likely if using convertOffsetsToJson)
       try {
         parsedCoordinates = (json['coordinates'] as List).map((point) {
-          // Ensure point is a Map and keys exist, handle potential type errors
           final double? x = (point is Map && point.containsKey('x'))
               ? (point['x'] as num?)?.toDouble()
               : null;
@@ -70,18 +66,17 @@ class Measure {
     }
 
     return Measure(
-      id: json['idMeasure'] ?? 0, // Provide default if null
+      id: json['idMeasure'] ?? 0,
       userBW: json['userBW'],
       algorithmBW: json['algorithmBW'],
       userBCS: json['userBCS'],
       algorithmBCS: json['algorithmBCS'],
-      date: json['date'] != null
-          ? DateTime.parse(json['date'])
-          : DateTime.now(), // Provide default
-      coordinates: parsedCoordinates, // Use parsed coordinates
-      picturePath: json['picturePath'] ?? '', // Provide default
+      date:
+          json['date'] != null ? DateTime.parse(json['date']) : DateTime.now(),
+      coordinates: parsedCoordinates,
+      picturePath: json['picturePath'] ?? '',
       favorite: json['favorite'],
-      horseId: json['horseId'] ?? 0, // Provide default
+      horseId: json['horseId'] ?? 0,
       veterinarianId: json['veterinarianId'],
       appointmentId: json['appointmentId'],
     );
@@ -95,7 +90,6 @@ class Measure {
       'userBCS': userBCS,
       'algorithmBCS': algorithmBCS,
       'date': date.toIso8601String(),
-      // Convert coordinates back to JSON string for sending
       'coordinates': convertOffsetsToJson(coordinates),
       'picturePath': picturePath,
       'favorite': favorite,
@@ -113,12 +107,10 @@ class Measure {
     return jsonEncode(mappedCoordinates);
   }
 
-  // Static version for use in fromJson factory
   static List<Offset> convertJsonToOffsetsStatic(String jsonString) {
     try {
       final List<dynamic> decoded = jsonDecode(jsonString);
       return decoded.map((point) {
-        // Add type checking for robustness
         if (point is Map && point.containsKey('x') && point.containsKey('y')) {
           final double? x = (point['x'] as num?)?.toDouble();
           final double? y = (point['y'] as num?)?.toDouble();
@@ -126,13 +118,13 @@ class Measure {
             return Offset(x, y);
           }
         }
-        // Handle invalid point format, maybe return Offset.zero or throw
+
         debugPrint("Invalid point format in JSON coordinates: $point");
         return Offset.zero;
       }).toList();
     } catch (e) {
       debugPrint("Error decoding JSON coordinates string: $e");
-      return []; // Return empty list on error
+      return [];
     }
   }
 
@@ -141,49 +133,41 @@ class Measure {
     return Measure.convertJsonToOffsetsStatic(jsonString);
   }
 
-  // Helper method to get headers with JWT token
   Future<Map<String, String>> _getHeaders({bool isMultipart = false}) async {
     const storage = FlutterSecureStorage(); // Create storage instance
     final token = await storage.read(key: 'jwt');
     final headers = <String, String>{};
 
-    // Set Content-Type for JSON requests unless it's multipart
-    // For MultipartRequest, the http package handles the Content-Type header itself
     if (!isMultipart) {
       headers['Content-Type'] = 'application/json; charset=UTF-8';
     }
-    // Add Authorization header if token exists
+
     if (token != null) {
       headers['Authorization'] = 'Bearer $token';
     }
     return headers;
   }
 
-  // Modified method to accept veterinarianId as a parameter
   Future<bool> firstUploadToServer({required int currentVeterinarianId}) async {
     try {
-      // Get headers (includes JWT)
       final headers = await _getHeaders(isMultipart: true);
 
       var request = http.MultipartRequest(
         'POST',
-        // Ensure endpoint is correct (measure vs measures)
         Uri.parse('http://10.0.2.2:9090/measure'),
       );
-      request.headers.addAll(headers); // Add headers to request
+      request.headers.addAll(headers);
 
-      // Add fields to the request
       request.fields['date'] = DateTime.now().toIso8601String();
       request.fields['coordinates'] = convertOffsetsToJson(coordinates);
       request.fields['horseId'] = horseId.toString();
-      // Use the ID passed as a parameter
+
       request.fields['veterinarianId'] = currentVeterinarianId.toString();
-      // Add appointmentId if it exists
+
       if (appointmentId != null) {
         request.fields['appointmentId'] = appointmentId.toString();
       }
 
-      // Add the picture file if the path is valid
       if (picturePath.isNotEmpty) {
         final imageFile = File(picturePath);
         if (await imageFile.exists()) {
@@ -192,7 +176,6 @@ class Measure {
           );
         } else {
           debugPrint("Picture file not found at path: $picturePath");
-          // Consider if this is an error or proceed without image
         }
       } else {
         debugPrint("No picture path provided for measure upload.");
@@ -205,7 +188,6 @@ class Measure {
         var jsonResponse = jsonDecode(responseBody);
         var jsonMeasure = jsonResponse['measure'];
 
-        // Update the measure object with data returned from the server
         id = (jsonMeasure['idMeasure'] as int?) ?? id;
 
         if (jsonMeasure.containsKey('picturePath')) {
@@ -217,7 +199,7 @@ class Measure {
 
         algorithmBCS = (jsonMeasure['algorithmBCS'] as int?);
         algorithmBW = (jsonMeasure['algorithmBW'] as int?);
-        // Store the veterinarianId used/returned by the server
+
         veterinarianId =
             (jsonMeasure['veterinarianId'] as int?) ?? currentVeterinarianId;
 
@@ -234,14 +216,9 @@ class Measure {
     }
   }
 
-  // --- editBWandBCS and deleteMeasure methods ---
-  // These remain unchanged for now, but consider if they also need the vet ID
-  // for backend validation/authorization.
-
   Future<bool> editBWandBCS(int? bw, int? bcs) async {
     try {
-      final headers =
-          await _getHeaders(isMultipart: true); // Assuming multipart needed
+      final headers = await _getHeaders(isMultipart: true);
 
       if (id == 0) {
         throw Exception("Cannot edit measure with ID 0. Upload it first.");
@@ -287,19 +264,17 @@ class Measure {
 
   Future<bool> deleteMeasure() async {
     try {
-      final headers = await _getHeaders(); // Assuming non-multipart for DELETE
+      final headers = await _getHeaders();
 
       if (id == 0) {
         return true;
       }
 
-      // Standard http.delete is often preferred for DELETE requests
       final response = await http.delete(
         Uri.parse('http://10.0.2.2:9090/measure/$id'),
         headers: headers,
       );
 
-      // Check for 200 OK or 204 No Content for successful deletion
       if (response.statusCode == 200 || response.statusCode == 204) {
         return true;
       } else if (response.statusCode == 401) {

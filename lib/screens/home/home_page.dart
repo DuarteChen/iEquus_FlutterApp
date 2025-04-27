@@ -34,22 +34,18 @@ class _HomePageState extends State<HomePage> {
   Widget build(BuildContext context) {
     Widget veterinarianWelcome = Consumer<VeterinarianProvider>(
       builder: (context, vetProvider, child) {
-        // Get the veterinarian object from the provider
         final veterinarian = vetProvider.veterinarian;
 
-        // Determine the text to display, handling null case
         final String nameText = veterinarian?.name ?? 'Loading...';
         final String cedulaText = veterinarian?.idCedulaProfissional ?? '---';
 
         return Container(
           width: double.infinity,
-          padding: const EdgeInsets.symmetric(
-              horizontal: 20.0, vertical: 24.0), // Adjusted padding
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
           decoration: BoxDecoration(
             color: Theme.of(context).primaryColor,
             borderRadius: const BorderRadius.all(Radius.circular(15)),
             boxShadow: [
-              // Optional: Add a subtle shadow
               BoxShadow(
                 color: Colors.black.withOpacity(0.15),
                 blurRadius: 6,
@@ -58,7 +54,6 @@ class _HomePageState extends State<HomePage> {
             ],
           ),
           child: Column(
-            // Use Column for vertical layout
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment:
                 CrossAxisAlignment.start, // Align text to the left
@@ -72,7 +67,7 @@ class _HomePageState extends State<HomePage> {
               ),
               const SizedBox(height: 4),
               Text(
-                nameText, // Display the name
+                nameText,
                 style: const TextStyle(
                   color: Colors.white,
                   fontSize: 24,
@@ -81,9 +76,9 @@ class _HomePageState extends State<HomePage> {
                 maxLines: 1,
                 overflow: TextOverflow.ellipsis,
               ),
-              const SizedBox(height: 8), // Spacing between name and ID
+              const SizedBox(height: 8),
               Text(
-                cedulaText, // Display the professional ID
+                cedulaText,
                 style: TextStyle(
                   color: Colors.white.withOpacity(0.75),
                   fontSize: 14,

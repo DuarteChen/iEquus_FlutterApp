@@ -34,7 +34,6 @@ class AppointmentMainInfoState extends State<AppointmentMainInfo> {
           mainAxisAlignment: MainAxisAlignment.center,
           children: <Widget>[
             Text('Appointment Date: ${widget.appointmentDate}'),
-            // Add more widgets to display or edit the lameness information
           ],
         ),
       ),

@@ -30,8 +30,7 @@ class VeterinarianProvider with ChangeNotifier {
     _veterinarian = veterinarian;
     _setError(null);
     _setLoading(false);
-    hospitalProvider
-        .setHospital(veterinarian.hospital); // Set hospital at same time
+    hospitalProvider.setHospital(veterinarian.hospital);
     notifyListeners();
   }
 

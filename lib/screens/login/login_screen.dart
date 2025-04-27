@@ -28,35 +28,25 @@ class _LoginScreenState extends State<LoginScreen> {
       _errorMessage = '';
     });
 
-    final client = http.Client(); // Create a client for managing the request
+    final client = http.Client();
     try {
       final url = Uri.parse('http://10.0.2.2:9090/login');
 
-      // Create a MultipartRequest for sending form data
       var request = http.MultipartRequest('POST', url);
 
-      // Add email and password as fields
       request.fields['email'] = _emailController.text;
       request.fields['password'] = _passwordController.text;
 
-      // Note: No 'Content-Type' header needed here for multipart/form-data,
-      // the http package handles it automatically.
-
-      // Send the request
       final streamedResponse = await client.send(request);
 
-      // Read the response from the stream
       final response = await http.Response.fromStream(streamedResponse);
 
-      // Decode the response body
       final data = jsonDecode(response.body);
 
       if (response.statusCode == 200) {
         final token = data['access_token'];
         await storage.write(key: 'jwt', value: token);
 
-        // Fetch veterinarian data and update provider
-        // Consider moving this fetch logic to the provider itself (e.g., provider.loginAndFetchData)
         final veterinarian = await _fetchVeterinarianData(token);
         if (veterinarian != null) {
           final hospitalProvider =
@@ -64,7 +54,6 @@ class _LoginScreenState extends State<LoginScreen> {
           Provider.of<VeterinarianProvider>(context, listen: false)
               .setVeterinarian(veterinarian, hospitalProvider);
           if (mounted) {
-            // Use pushReplacementNamed to prevent going back to login screen
             Navigator.pushReplacementNamed(context, '/home');
           }
         } else {
@@ -74,25 +63,19 @@ class _LoginScreenState extends State<LoginScreen> {
           });
         }
       } else {
-        // Handle login failure (e.g., 401 Unauthorized)
         setState(() {
-          _errorMessage = data['msg'] ?? // Use server message if available
+          _errorMessage = data['msg'] ??
               'Login failed. Status code: ${response.statusCode}';
         });
       }
     } catch (e) {
-      // Handle network or other errors during login request
       setState(() {
         _errorMessage = 'An error occurred: ${e.toString()}';
       });
     } finally {
-      client.close(); // Close the client
-      // Ensure loading indicator is turned off
+      client.close();
       if (mounted) {
-        // Check if the widget is still in the tree
         setState(() {
-          // Check if login actually failed based on provider state if needed
-          // (This check might be redundant if _errorMessage covers all failures)
           if (Provider.of<VeterinarianProvider>(context, listen: false)
                       .veterinarian ==
                   null &&
@@ -119,10 +102,9 @@ class _LoginScreenState extends State<LoginScreen> {
 
       if (response.statusCode == 200) {
         final data = jsonDecode(response.body);
-        // Assuming your Veterinarian model has a fromMap or fromJson factory constructor
+
         return Veterinarian.fromMap(data);
       } else {
-        // Log error or handle appropriately
         print('Failed to fetch veterinarian data: ${response.statusCode}');
         print('Response body: ${response.body}');
         return null;
@@ -135,7 +117,6 @@ class _LoginScreenState extends State<LoginScreen> {
 
   @override
   void dispose() {
-    // Dispose controllers when the widget is removed from the widget tree
     _emailController.dispose();
     _passwordController.dispose();
     super.dispose();
@@ -146,126 +127,101 @@ class _LoginScreenState extends State<LoginScreen> {
     return Scaffold(
       appBar: AppBar(
         title: const Text('Login'),
-        backgroundColor:
-            Theme.of(context).colorScheme.primary, // Use theme color
-        foregroundColor: Theme.of(context)
-            .colorScheme
-            .onPrimary, // Use theme color for text/icons
+        backgroundColor: Theme.of(context).colorScheme.primary,
+        foregroundColor: Theme.of(context).colorScheme.onPrimary,
       ),
       body: Center(
-        // Center the content vertically
         child: SingleChildScrollView(
-          // Allow scrolling if content overflows
-          padding: const EdgeInsets.all(24.0), // Increased padding
+          padding: const EdgeInsets.all(24.0),
           child: Form(
             key: _formKey,
             child: Column(
               mainAxisAlignment: MainAxisAlignment.center,
-              crossAxisAlignment:
-                  CrossAxisAlignment.stretch, // Stretch buttons/fields
+              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: <Widget>[
-                // Optional: Add an App Logo or Title
                 // Image.asset('assets/logo.png', height: 100),
                 // const SizedBox(height: 40),
                 TextFormField(
                   controller: _emailController,
                   decoration: InputDecoration(
                     labelText: 'Email',
-                    prefixIcon: const Icon(Icons.email), // Add icon
+                    prefixIcon: const Icon(Icons.email),
                     border: OutlineInputBorder(
-                      // Add border
                       borderRadius: BorderRadius.circular(8.0),
                     ),
                   ),
-                  keyboardType: TextInputType.emailAddress, // Set keyboard type
+                  keyboardType: TextInputType.emailAddress,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your email';
                     }
-                    // Basic email format validation
+
                     if (!RegExp(r'^[^@]+@[^@]+\.[^@]+').hasMatch(value)) {
                       return 'Please enter a valid email address';
                     }
                     return null;
                   },
                 ),
-                const SizedBox(height: 16), // Consistent spacing
+                const SizedBox(height: 16),
                 TextFormField(
                   controller: _passwordController,
                   decoration: InputDecoration(
                     labelText: 'Password',
-                    prefixIcon: const Icon(Icons.lock), // Add icon
+                    prefixIcon: const Icon(Icons.lock),
                     border: OutlineInputBorder(
-                      // Add border
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    // Add suffix icon to toggle password visibility if needed
                   ),
                   obscureText: true,
                   validator: (value) {
                     if (value == null || value.isEmpty) {
                       return 'Please enter your password';
                     }
-                    // Add password complexity rules if needed
-                    // if (value.length < 6) {
+
+                    // TODO if (value.length < 6) {
                     //   return 'Password must be at least 6 characters long';
                     // }
                     return null;
                   },
                 ),
-                const SizedBox(
-                    height: 24), // Increased spacing before button/error
+                const SizedBox(height: 24),
                 if (_errorMessage.isNotEmpty)
                   Padding(
-                    // Add padding around error message
                     padding: const EdgeInsets.only(bottom: 16.0),
                     child: Text(
                       _errorMessage,
                       style: TextStyle(
                           color: Theme.of(context).colorScheme.error,
-                          fontSize: 14), // Use theme error color
+                          fontSize: 14),
                       textAlign: TextAlign.center,
                     ),
                   ),
-                // const SizedBox(height: 20), // Removed redundant SizedBox
+                // const SizedBox(height: 20),
                 ElevatedButton(
                   style: ElevatedButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(
-                        vertical: 16.0), // Make button taller
-                    textStyle:
-                        const TextStyle(fontSize: 16), // Increase text size
+                    padding: const EdgeInsets.symmetric(vertical: 16.0),
+                    textStyle: const TextStyle(fontSize: 16),
                     shape: RoundedRectangleBorder(
-                      // Rounded corners
                       borderRadius: BorderRadius.circular(8.0),
                     ),
-                    backgroundColor: Theme.of(context)
-                        .colorScheme
-                        .primary, // Use theme color
-                    foregroundColor: Theme.of(context)
-                        .colorScheme
-                        .onPrimary, // Use theme color for text
+                    backgroundColor: Theme.of(context).colorScheme.primary,
+                    foregroundColor: Theme.of(context).colorScheme.onPrimary,
                   ),
-                  // Disable button while loading OR if not loading
                   onPressed: _isLoading
                       ? null
                       : () {
                           if (_formKey.currentState?.validate() ?? false) {
-                            // Use null-safe validation check
                             _login();
                           }
                         },
                   child: _isLoading
                       ? SizedBox(
-                          // Constrain indicator size
                           width: 24,
                           height: 24,
                           child: CircularProgressIndicator(
                             strokeWidth: 3,
                             valueColor: AlwaysStoppedAnimation<Color>(
-                                Theme.of(context)
-                                    .colorScheme
-                                    .onPrimary // Use contrasting color
-                                ),
+                                Theme.of(context).colorScheme.onPrimary),
                           ),
                         )
                       : const Text('Login'),

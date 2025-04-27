@@ -30,8 +30,7 @@ class CreateAppointmentState extends State<CreateAppointment> {
   String? muscleTensionStifness;
   String? muscleTensionR;
 
-  File? cbc; // Assuming this is for a file upload specific to the appointment
-
+  File? cbc;
   String? comment;
   // ------------------------
 
@@ -41,12 +40,11 @@ class CreateAppointmentState extends State<CreateAppointment> {
       length: 3,
       child: Scaffold(
         appBar: AppBar(
-          // You could potentially add the vet's name or horse's name here
           title: Text("Appointment for ${widget.horse.name}"),
           centerTitle: true,
           bottom: const TabBar(tabs: [
             Tab(text: "Main Info", icon: Icon(Icons.medical_information)),
-            Tab(text: "AI Measures", icon: Icon(Icons.stream)), // Example tab
+            Tab(text: "AI Measures", icon: Icon(Icons.stream)),
             Tab(text: "Comments", icon: Icon(Icons.comment)),
           ]),
         ),

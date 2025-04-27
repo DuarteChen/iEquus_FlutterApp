@@ -3,8 +3,7 @@ import 'package:image_picker/image_picker.dart';
 
 class SmallImagePreview extends StatelessWidget {
   final ImageProvider<Object>? profileImageProvider;
-  final Function(ImageSource)
-      onImageSourceSelected; // Changed to accept ImageSource
+  final Function(ImageSource) onImageSourceSelected;
   final String emptyImage;
 
   const SmallImagePreview({
@@ -50,10 +49,10 @@ class SmallImagePreview extends StatelessWidget {
                 _showImageSourceDialog(context);
               },
               child: Container(
-                padding: EdgeInsets.all(8), // Adjusted padding
+                padding: EdgeInsets.all(8),
                 child: Icon(
                   Icons.edit,
-                  color: Theme.of(context).primaryColor, // Adjusted icon size
+                  color: Theme.of(context).primaryColor,
                 ),
               ),
             ),
