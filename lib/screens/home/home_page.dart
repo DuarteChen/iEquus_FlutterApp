@@ -20,12 +20,13 @@ class _HomePageState extends State<HomePage> {
   Future<void> _logout() async {
     await storage.delete(key: 'jwt');
 
-    final hospitalProvider =
-        Provider.of<HospitalProvider>(context, listen: false);
-
-    Provider.of<VeterinarianProvider>(context, listen: false)
-        .clear(hospitalProvider);
     if (mounted) {
+      final hospitalProvider =
+          Provider.of<HospitalProvider>(context, listen: false);
+
+      Provider.of<VeterinarianProvider>(context, listen: false)
+          .clear(hospitalProvider);
+
       Navigator.pushReplacementNamed(context, '/login');
     }
   }

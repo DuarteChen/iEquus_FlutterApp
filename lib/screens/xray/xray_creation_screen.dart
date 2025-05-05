@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:io';
 import 'package:equus/models/horse.dart';
+import 'package:equus/models/xray_label.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
@@ -17,8 +18,13 @@ class XRayCreation extends StatefulWidget {
 class _XRayCreationState extends State<XRayCreation> {
   File? _localXrayImageFile;
   String? _uploadedImageUrl;
+  List<XRayLabel> _xrayLabels = [];
   bool _isUploading = false;
   String? _uploadError;
+  ImageInfo? _imageInfo;
+  ImageStream? _imageStream;
+  ImageStreamListener? _imageListener;
+  bool _showLabels = true;
 
   Future<void> _pickImage(ImageSource source) async {
     if (_isUploading) return;
@@ -31,6 +37,8 @@ class _XRayCreationState extends State<XRayCreation> {
       _localXrayImageFile = File(pickedImage.path);
       _uploadedImageUrl = null;
       _uploadError = null;
+      _xrayLabels = [];
+      _clearImageInfo();
     });
   }
 
@@ -82,11 +90,29 @@ class _XRayCreationState extends State<XRayCreation> {
       if (response.statusCode == 200 || response.statusCode == 201) {
         var jsonResponse = jsonDecode(responseBody);
         final String? returnedUrl = jsonResponse['returnedImageUrl'];
+        final Map<String, dynamic>? coordinatesData =
+            jsonResponse['coordinates_data'] as Map<String, dynamic>?;
 
         if (returnedUrl != null) {
+          List<XRayLabel> parsedLabels = [];
+          if (coordinatesData != null) {
+            for (var value in coordinatesData.values) {
+              if (value is Map<String, dynamic>) {
+                parsedLabels.add(XRayLabel(
+                  name: value['label'] as String? ?? 'Unknown Label',
+                  x: value['x'] as int? ?? 0,
+                  y: value['y'] as int? ?? 0,
+                  description:
+                      value['description'] as String? ?? 'No description',
+                ));
+              }
+            }
+          }
           setState(() {
             _uploadedImageUrl = returnedUrl;
+            _xrayLabels = parsedLabels;
             _localXrayImageFile = null;
+            _updateImageListener(); // Start listening for the network image
             _isUploading = false;
           });
           if (mounted) {
@@ -109,6 +135,8 @@ class _XRayCreationState extends State<XRayCreation> {
         setState(() {
           _isUploading = false;
           _uploadError = "Upload failed: ${e.toString()}";
+          _xrayLabels = [];
+          _clearImageInfo(); // Clear image info on error
         });
       }
     }
@@ -146,18 +174,119 @@ class _XRayCreationState extends State<XRayCreation> {
     );
   }
 
+  void _showLabelDetailsDialog(BuildContext context, XRayLabel label) {
+    showDialog(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(label.name),
+          content: Text(label.description),
+          actions: <Widget>[
+            TextButton(
+              child: const Text('Close'),
+              onPressed: () => Navigator.of(dialogContext).pop(),
+            ),
+          ],
+        );
+      },
+    );
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _imageListener =
+        ImageStreamListener(_handleImageLoaded, onError: _handleImageError);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Re-listen if the image provider might have changed implicitly
+    _updateImageListener();
+  }
+
+  @override
+  void dispose() {
+    _imageStream?.removeListener(_imageListener!);
+    super.dispose();
+  }
+
+  void _handleImageLoaded(ImageInfo imageInfo, bool synchronousCall) {
+    setState(() {
+      _imageInfo = imageInfo;
+    });
+  }
+
+  void _handleImageError(dynamic exception, StackTrace? stackTrace) {
+    debugPrint("Error loading image for dimension calculation: $exception");
+    setState(() {
+      _imageInfo = null; // Clear info on error
+    });
+  }
+
+  void _clearImageInfo() {
+    if (mounted) {
+      setState(() {
+        _imageInfo = null;
+      });
+    }
+
+    _imageStream?.removeListener(_imageListener!);
+    _imageStream = null;
+  }
+
+  void _updateImageListener() {
+    _clearImageInfo();
+    final ImageProvider? provider = _getImageProvider();
+    if (provider != null) {
+      _imageStream = provider.resolve(createLocalImageConfiguration(context));
+      _imageStream!.addListener(_imageListener!);
+    }
+  }
+
+  ImageProvider? _getImageProvider() {
+    if (_uploadedImageUrl != null) {
+      return NetworkImage(_uploadedImageUrl!);
+    } else if (_localXrayImageFile != null) {
+      return FileImage(_localXrayImageFile!);
+    }
+    return null;
+  }
+
+  Offset _calculateMarkerPosition(XRayLabel label, Size containerSize,
+      Size imageSize, FittedSizes fittedSizes) {
+    // Scale factor
+    final double scale =
+        fittedSizes.destination.width / fittedSizes.source.width;
+    final double offsetX =
+        (containerSize.width - fittedSizes.destination.width) / 2.0;
+    final double offsetY =
+        (containerSize.height - fittedSizes.destination.height) / 2.0;
+
+    final double finalX = (label.x * scale) + offsetX;
+    final double finalY = (label.y * scale) + offsetY;
+
+    return Offset(finalX, finalY);
+  }
+
   @override
   Widget build(BuildContext context) {
-    ImageProvider? displayImageProvider;
-    if (_uploadedImageUrl != null) {
-      displayImageProvider = NetworkImage(_uploadedImageUrl!);
-    } else if (_localXrayImageFile != null) {
-      displayImageProvider = FileImage(_localXrayImageFile!);
-    }
+    final ImageProvider? displayImageProvider = _getImageProvider();
 
     return Scaffold(
       appBar: AppBar(
         title: Text("X-Ray for ${widget.horse.name}"),
+        actions: [
+          if (_xrayLabels.isNotEmpty && !_isUploading)
+            IconButton(
+              icon: Icon(_showLabels ? Icons.visibility_off : Icons.visibility),
+              tooltip: _showLabels ? 'Hide Labels' : 'Show Labels',
+              onPressed: () {
+                setState(() => _showLabels = !_showLabels);
+              },
+            ),
+        ],
       ),
       body: Center(
         child: Padding(
@@ -166,6 +295,7 @@ class _XRayCreationState extends State<XRayCreation> {
             mainAxisAlignment: MainAxisAlignment.center,
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: [
+              // --- Image Display Area ---
               Expanded(
                 child: Container(
                   decoration: BoxDecoration(
@@ -174,30 +304,46 @@ class _XRayCreationState extends State<XRayCreation> {
                     color: Colors.grey.shade100,
                   ),
                   alignment: Alignment.center,
-                  child: _isUploading
-                      ? const CircularProgressIndicator()
-                      : displayImageProvider != null
-                          ? Image(
-                              image: displayImageProvider,
-                              fit: BoxFit.contain,
-                              errorBuilder: (context, error, stackTrace) {
-                                return Column(
-                                  mainAxisAlignment: MainAxisAlignment.center,
-                                  children: [
-                                    const Icon(Icons.error_outline,
-                                        color: Colors.red, size: 40),
-                                    const SizedBox(height: 8),
-                                    Text(
-                                        _uploadedImageUrl != null
-                                            ? 'Error loading network image'
-                                            : 'Error loading local file',
-                                        style:
-                                            const TextStyle(color: Colors.red)),
-                                  ],
-                                );
-                              },
+                  // Use LayoutBuilder to get container size
+                  child: LayoutBuilder(
+                    builder: (context, constraints) {
+                      final containerSize =
+                          Size(constraints.maxWidth, constraints.maxHeight);
+                      FittedSizes? fittedSizes;
+                      Size? imageSize;
+
+                      if (_imageInfo != null) {
+                        imageSize = Size(_imageInfo!.image.width.toDouble(),
+                            _imageInfo!.image.height.toDouble());
+                        fittedSizes = applyBoxFit(
+                            BoxFit.contain, imageSize, containerSize);
+                      }
+
+                      return Stack(
+                        children: [
+                          // --- Image or Placeholder ---
+                          if (_isUploading)
+                            const Center(child: CircularProgressIndicator())
+                          else if (displayImageProvider != null)
+                            Center(
+                              child: SizedBox(
+                                width: fittedSizes?.destination.width ??
+                                    containerSize.width,
+                                height: fittedSizes?.destination.height ??
+                                    containerSize.height,
+                                child: Image(
+                                  image: displayImageProvider,
+                                  fit: BoxFit.contain,
+                                  errorBuilder: (context, error, stackTrace) {
+                                    return const Center(
+                                        child: Icon(Icons.broken_image,
+                                            color: Colors.grey, size: 50));
+                                  },
+                                ),
+                              ),
                             )
-                          : const Column(
+                          else
+                            const Column(
                               mainAxisAlignment: MainAxisAlignment.center,
                               children: [
                                 Icon(Icons.image_not_supported_outlined,
@@ -206,6 +352,48 @@ class _XRayCreationState extends State<XRayCreation> {
                                 Text('No X-Ray image selected'),
                               ],
                             ),
+
+                          // --- Positioned Labels ---
+                          if (fittedSizes != null &&
+                              imageSize != null &&
+                              _xrayLabels.isNotEmpty &&
+                              !_isUploading)
+                            if (_showLabels)
+                              ..._xrayLabels.map(
+                                (label) {
+                                  final Offset position =
+                                      _calculateMarkerPosition(
+                                          label,
+                                          containerSize,
+                                          imageSize!,
+                                          fittedSizes!);
+
+                                  return Positioned(
+                                    left: position.dx - 12,
+                                    top: position.dy - 12,
+                                    child: GestureDetector(
+                                      onTap: () => _showLabelDetailsDialog(
+                                          context, label),
+                                      child: Tooltip(
+                                        message: label.name,
+                                        child: Container(
+                                          padding: const EdgeInsets.all(4),
+                                          decoration: const BoxDecoration(
+                                            color: Colors.redAccent,
+                                            shape: BoxShape.circle,
+                                          ),
+                                          child: const Icon(Icons.add,
+                                              size: 16, color: Colors.white),
+                                        ),
+                                      ),
+                                    ),
+                                  );
+                                },
+                              ),
+                        ],
+                      );
+                    },
+                  ),
                 ),
               ),
               if (_uploadError != null)

@@ -54,7 +54,7 @@ class Veterinarian extends Human {
   Map<String, dynamic> toMap() {
     final map = super.toMap();
     map['idCedulaProfissional'] = idCedulaProfissional;
-    map['hospital'] = hospital?.toMap();
+    map['hospital'] = hospital.toMap();
     return map;
   }
 }
