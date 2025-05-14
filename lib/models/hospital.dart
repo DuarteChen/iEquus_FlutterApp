@@ -6,6 +6,7 @@ class Hospital {
   final String city;
   final String country;
   final String? optionalAddressField;
+  final String? logoPath;
 
   Hospital({
     required this.id,
@@ -15,6 +16,7 @@ class Hospital {
     required this.city,
     required this.country,
     this.optionalAddressField,
+    this.logoPath,
   });
 
   factory Hospital.fromMap(Map<String, dynamic> map) {
@@ -26,6 +28,7 @@ class Hospital {
       city: map['city'],
       country: map['country'],
       optionalAddressField: map['optionalAddressField'],
+      logoPath: map['logoPath'],
     );
   }
 
@@ -38,6 +41,7 @@ class Hospital {
       'city': city,
       'country': country,
       'optionalAddressField': optionalAddressField,
+      'logoPath': logoPath,
     };
   }
 }

@@ -14,6 +14,8 @@ void main() {
     DeviceOrientation.portraitUp,
   ]).then((_) async {
     const storage = FlutterSecureStorage();
+    //storage.deleteAll(); //To clean the JWT Token
+
     String? token = await storage.read(key: 'jwt');
 
     final String initialRoute = token != null ? '/home' : '/login';

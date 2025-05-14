@@ -1,3 +1,4 @@
+import 'package:equus/models/veterinarian.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
 import 'package:equus/screens/appointment/horse_selector.dart';
 import 'package:equus/screens/horses/create_horse_screen.dart';
@@ -28,63 +29,6 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
-    Widget veterinarianWelcome = Consumer<VeterinarianProvider>(
-      builder: (context, vetProvider, child) {
-        final veterinarian = vetProvider.veterinarian;
-
-        final String nameText = veterinarian?.name ?? 'Loading...';
-        final String cedulaText = veterinarian?.idCedulaProfissional ?? '---';
-
-        return Container(
-          width: double.infinity,
-          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
-          decoration: BoxDecoration(
-            color: Theme.of(context).primaryColor,
-            borderRadius: const BorderRadius.all(Radius.circular(15)),
-            boxShadow: [
-              BoxShadow(
-                color: Colors.black.withOpacity(0.15),
-                blurRadius: 6,
-                offset: const Offset(0, 3),
-              ),
-            ],
-          ),
-          child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Welcome,',
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.85),
-                  fontSize: 18,
-                ),
-              ),
-              const SizedBox(height: 4),
-              Text(
-                nameText,
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 24,
-                  fontWeight: FontWeight.bold,
-                ),
-                maxLines: 1,
-                overflow: TextOverflow.ellipsis,
-              ),
-              const SizedBox(height: 8),
-              Text(
-                cedulaText,
-                style: TextStyle(
-                  color: Colors.white.withOpacity(0.75),
-                  fontSize: 14,
-                ),
-              ),
-            ],
-          ),
-        );
-      },
-    );
-
     return Scaffold(
       appBar: AppBar(
         title: Text("iEquus"),
@@ -102,7 +46,7 @@ class _HomePageState extends State<HomePage> {
             child: Column(
               crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
-                veterinarianWelcome,
+                welcomeContainer(),
                 SizedBox(height: 8),
                 Padding(
                   padding: const EdgeInsets.only(left: 16.0, bottom: 8),
@@ -136,21 +80,6 @@ class _HomePageState extends State<HomePage> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.center,
                   children: [
-                    // Expanded(
-                    //   child: MainButtonBlue(
-                    //     iconImage: 'assets/icons/appointment_new_black.png',
-                    //     buttonText: "Appointment",
-                    //     onTap: () {
-                    //       Navigator.push(
-                    //         context,
-                    //         MaterialPageRoute(
-                    //           builder: (context) =>
-                    //               HorseSelector(appointment: true),
-                    //         ),
-                    //       );
-                    //     },
-                    //   ),
-                    // ),
                     SizedBox(width: 8),
                     Expanded(
                       child: MainButtonBlue(
@@ -215,6 +144,101 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
       ),
+    );
+  }
+
+  Consumer<VeterinarianProvider> welcomeContainer() {
+    return Consumer<VeterinarianProvider>(
+      builder: (context, vetProvider, child) {
+        final Veterinarian? veterinarian = vetProvider.veterinarian;
+        final String nameText = veterinarian?.name ?? 'Loading...';
+        final String cedulaText = veterinarian?.idCedulaProfissional ?? '---';
+
+        // Determine the widget to display for the hospital logo/placeholder
+        Widget? hospitalLogoWidget;
+        if (veterinarian != null &&
+            veterinarian.hasHospital &&
+            veterinarian.hospital!.logoPath != null &&
+            veterinarian.hospital!.logoPath!.isNotEmpty) {
+          hospitalLogoWidget = ClipRRect(
+            borderRadius: BorderRadius.circular(8.0), // Add rounded corners
+            child: Image.network(
+              veterinarian.hospital!.logoPath!,
+              width: 100,
+              height: 100,
+              fit: BoxFit.cover,
+              loadingBuilder: (BuildContext context, Widget child,
+                  ImageChunkEvent? loadingProgress) {
+                if (loadingProgress == null) return child;
+                return Center(
+                  child: CircularProgressIndicator(
+                    value: loadingProgress.expectedTotalBytes != null
+                        ? loadingProgress.cumulativeBytesLoaded /
+                            loadingProgress.expectedTotalBytes!
+                        : null,
+                  ),
+                );
+              },
+            ),
+          );
+        } else {
+          hospitalLogoWidget = SizedBox.shrink();
+        }
+
+        return Container(
+          width: double.infinity,
+          padding: const EdgeInsets.symmetric(horizontal: 20.0, vertical: 24.0),
+          decoration: BoxDecoration(
+            color: Theme.of(context).primaryColor,
+            borderRadius: const BorderRadius.all(Radius.circular(15)),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.15),
+                blurRadius: 6,
+                offset: const Offset(0, 3),
+              ),
+            ],
+          ),
+          child: Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Welcome,',
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.85),
+                      fontSize: 18,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    nameText,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 24,
+                      fontWeight: FontWeight.bold,
+                    ),
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    cedulaText,
+                    style: TextStyle(
+                      color: Colors.white.withOpacity(0.75),
+                      fontSize: 14,
+                    ),
+                  ),
+                ],
+              ),
+              hospitalLogoWidget,
+            ],
+          ),
+        );
+      },
     );
   }
 }

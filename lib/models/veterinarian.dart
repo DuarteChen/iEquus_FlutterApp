@@ -41,4 +41,6 @@ class Veterinarian extends Human {
     }
     return map;
   }
+
+  bool get hasHospital => hospital != null;
 }
