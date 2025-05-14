@@ -68,50 +68,72 @@ class _HorsesListWidgetState extends State<HorsesListWidget> {
       body: RefreshIndicator(
         onRefresh: horseProvider.refreshHorses,
         child: horseProvider.horses.isEmpty
-            ? const Center(child: CircularProgressIndicator())
-            : ListView.builder(
-                itemCount: horseProvider.horses.length,
-                itemBuilder: (context, index) {
-                  final horse = horseProvider.horses[index];
-                  return Card(
-                    child: ListTile(
-                      leading: CircleAvatar(
-                        backgroundColor:
-                            const Color.fromARGB(255, 226, 226, 226),
-                        child: horse.profilePicturePath != null
-                            ? ClipOval(
-                                child: Image.network(
-                                  horse.profilePicturePath!,
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
-                                ),
-                              )
-                            : ClipOval(
-                                child: Image.asset(
-                                  'assets/images/horse_empty_profile_image.png',
-                                  width: 40,
-                                  height: 40,
-                                  fit: BoxFit.cover,
-                                ),
-                              ),
+            // Assuming HorseProvider has an 'isLoading' boolean property.
+            // This helps distinguish initial loading from an empty list after loading.
+            ? (horseProvider.isLoading
+                ? const Center(child: CircularProgressIndicator())
+                : const Center(child: Text("No horses registered")))
+            : _buildHorseList(horseProvider),
+      ),
+    );
+  }
+
+  Widget _buildHorseList(HorseProvider horseProvider) {
+    return ListView.builder(
+      itemCount: horseProvider.horses.length,
+      itemBuilder: (context, index) {
+        final horse = horseProvider.horses[index];
+        return Card(
+          child: ListTile(
+            leading: CircleAvatar(
+              backgroundColor: const Color.fromARGB(255, 226, 226, 226),
+              // Check if profilePicturePath is not null and not empty
+              child: (horse.profilePicturePath != null &&
+                      horse.profilePicturePath!.isNotEmpty)
+                  ? ClipOval(
+                      child: Image.network(
+                        // TODO: Ensure horse.profilePicturePath is a full URL or construct it here
+                        // e.g., 'http://your-backend.com/static/${horse.profilePicturePath!}'
+                        horse.profilePicturePath!,
+                        width: 40,
+                        height: 40,
+                        fit: BoxFit.cover,
+                        loadingBuilder: (context, child, loadingProgress) {
+                          if (loadingProgress == null) return child;
+                          return const Center(
+                              child:
+                                  CircularProgressIndicator(strokeWidth: 2.0));
+                        },
+                        errorBuilder: (context, error, stackTrace) {
+                          return _defaultHorseImage(); // Fallback on error
+                        },
                       ),
-                      title: Text(horse.name),
-                      subtitle:
-                          Text(horse.birthDateToString() ?? 'No birth date'),
-                      onTap: () {
-                        Navigator.push(
-                          context,
-                          MaterialPageRoute(
-                            builder: (context) =>
-                                widget.widgetForSelectedScreen(horse),
-                          ),
-                        );
-                      },
-                    ),
-                  );
-                },
-              ),
+                    )
+                  : _defaultHorseImage(), // Fallback if no path
+            ),
+            title: Text(horse.name),
+            subtitle: Text(horse.birthDateToString() ?? 'No birth date'),
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => widget.widgetForSelectedScreen(horse),
+                ),
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _defaultHorseImage() {
+    return ClipOval(
+      child: Image.asset(
+        'assets/images/horse_empty_profile_image.png', // Ensure this asset exists
+        width: 40,
+        height: 40,
+        fit: BoxFit.cover,
       ),
     );
   }

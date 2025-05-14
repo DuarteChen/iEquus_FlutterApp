@@ -44,106 +44,119 @@ class _HomePageState extends State<HomePage> {
         child: Expanded(
           child: SingleChildScrollView(
             child: Column(
-              crossAxisAlignment: CrossAxisAlignment.stretch,
               children: [
                 welcomeContainer(),
                 SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.only(left: 16.0, bottom: 8),
-                  child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Text(
-                        "Appointments",
-                        style: TextStyle(
-                          fontSize: 20,
-                        ),
-                      ),
-                      IconButton(
-                        onPressed: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  HorseSelector(selectorType: 'appointment'),
-                            ),
-                          );
-                        },
-                        icon: Icon(Icons.add),
-                        // ImageIcon(
-                        //   AssetImage('assets/icons/appointment_new_black.png'),
-                        //),
-                      ),
-                    ],
-                  ),
-                ),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: MainButtonBlue(
-                        icon: Icon(Icons.stream),
-                        buttonText: "Measure",
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  HorseSelector(selectorType: 'measure'),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                    SizedBox(width: 8),
-                    Expanded(
-                      child: MainButtonBlue(
-                        icon: Icon(Icons.medication_outlined),
-                        buttonText: "X-Ray",
-                        onTap: () {
-                          Navigator.push(
-                            context,
-                            MaterialPageRoute(
-                              builder: (context) =>
-                                  HorseSelector(selectorType: 'x-ray'),
-                            ),
-                          );
-                        },
-                      ),
-                    ),
-                  ],
-                ),
+                appointmentsSection(),
                 SizedBox(height: 8),
-                Padding(
-                  padding: const EdgeInsets.only(left: 16.0, bottom: 8),
-                  child: Text(
-                    "Services",
-                    style: TextStyle(
-                      fontSize: 20,
-                    ),
-                  ),
-                ),
-                MainButtonBlue(
-                    iconImage: 'assets/icons/horse_new_black.png',
-                    buttonText: "New Horse",
-                    onTap: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
-                            builder: (context) => CreateHorseScreen()),
-                      );
-                    }),
-                SizedBox(height: 8),
-                MainButtonBlue(
-                    iconImage: 'assets/icons/client_new_black.png',
-                    buttonText: "New Client",
-                    onTap: () {}),
+                servicesSection(),
               ],
             ),
           ),
         ),
       ),
+    );
+  }
+
+  Widget servicesSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Padding(
+          padding: const EdgeInsets.only(left: 16.0, bottom: 8),
+          child: Text(
+            "Services",
+            style: TextStyle(
+              fontSize: 20,
+            ),
+          ),
+        ),
+        MainButtonBlue(
+            iconImage: 'assets/icons/horse_new_black.png',
+            buttonText: "New Horse",
+            onTap: () {
+              Navigator.push(
+                context,
+                MaterialPageRoute(builder: (context) => CreateHorseScreen()),
+              );
+            }),
+        SizedBox(height: 8),
+        MainButtonBlue(
+            iconImage: 'assets/icons/client_new_black.png',
+            buttonText: "New Client",
+            onTap: () {}),
+      ],
+    );
+  }
+
+  Widget appointmentsSection() {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            Padding(
+              padding: const EdgeInsets.fromLTRB(16.0, 0, 0, 0),
+              child: Text(
+                "Appointments",
+                style: TextStyle(
+                  fontSize: 20,
+                ),
+              ),
+            ),
+            IconButton(
+              onPressed: () {
+                Navigator.push(
+                  context,
+                  MaterialPageRoute(
+                    builder: (context) =>
+                        HorseSelector(selectorType: 'appointment'),
+                  ),
+                );
+              },
+              icon: Icon(Icons.add),
+            ),
+          ],
+        ),
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            SizedBox(width: 8),
+            Expanded(
+              child: MainButtonBlue(
+                icon: Icon(Icons.stream),
+                buttonText: "Measure",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          HorseSelector(selectorType: 'measure'),
+                    ),
+                  );
+                },
+              ),
+            ),
+            SizedBox(width: 8),
+            Expanded(
+              child: MainButtonBlue(
+                icon: Icon(Icons.medication_outlined),
+                buttonText: "X-Ray",
+                onTap: () {
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) =>
+                          HorseSelector(selectorType: 'x-ray'),
+                    ),
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ],
     );
   }
 

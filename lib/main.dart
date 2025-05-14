@@ -40,15 +40,18 @@ class MyApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    Widget homeScreenWidget;
+
     if (initialRoute == '/home') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
         Provider.of<VeterinarianProvider>(context, listen: false)
             .loadVeterinarianData();
-
         Provider.of<HorseProvider>(context, listen: false).loadHorses();
       });
+      homeScreenWidget = const Home();
+    } else {
+      homeScreenWidget = const LoginScreen();
     }
-    // -------------------------------------------------------
 
     return MaterialApp(
       title: 'iEquus App',
@@ -66,7 +69,9 @@ class MyApp extends StatelessWidget {
           onSurface: Color.fromARGB(255, 46, 95, 138),
         ),
       ),
-      initialRoute: initialRoute,
+      // Set the home widget directly. This makes it the root of the navigation stack.
+      home: homeScreenWidget,
+      // The 'routes' map is still used for Navigator.pushNamed operations.
       routes: {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const Home(),
@@ -75,18 +80,6 @@ class MyApp extends StatelessWidget {
         Locale('en'),
         Locale('pt'),
       ],
-      home: initialRoute == '/home' ? InitialLoadingScreen() : LoginScreen(),
-    );
-  }
-}
-
-class InitialLoadingScreen extends StatelessWidget {
-  const InitialLoadingScreen({super.key});
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(child: CircularProgressIndicator()),
     );
   }
 }

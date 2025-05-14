@@ -9,8 +9,14 @@ class HorseProvider extends ChangeNotifier {
   final HorseService _horseService = HorseService();
   List<Horse> _horses = [];
   List<Horse> _filteredHorses = [];
+  bool _isLoading = false;
 
   List<Horse> get horses => _filteredHorses;
+  bool get isLoading => _isLoading;
+
+  void _setLoading(bool loading) {
+    _isLoading = loading;
+  }
 
   HorseProvider() {
     loadHorses();
@@ -29,15 +35,16 @@ class HorseProvider extends ChangeNotifier {
   // --- Methods using HorseService (JWT handled internally by service) ---
 
   Future<void> loadHorseData(int horseId) async {
+    _setLoading(true);
     try {
       _currentHorse = await _horseService.fetchHorse(horseId);
       // Update image provider based on fetched data
       _updateProfileImageProvider(_currentHorse?.profilePicturePath);
-      notifyListeners();
     } catch (e) {
       debugPrint('Error loading horse data in provider: $e');
-
       rethrow;
+    } finally {
+      _setLoading(false);
     }
   }
 
@@ -50,6 +57,7 @@ class HorseProvider extends ChangeNotifier {
   }
 
   Future<void> loadHorseClients(int horseId) async {
+    _setLoading(true);
     try {
       final clients = await _horseService.fetchHorseClients(horseId);
 
@@ -66,12 +74,16 @@ class HorseProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading horse clients in provider: $e');
-
       rethrow;
+    } finally {
+      _setLoading(false);
     }
   }
 
   Future<void> updateHorsePhoto(int horseId, File imageFile) async {
+    // Consider if a specific loading state for photo upload is needed,
+    // or if the general 'isLoading' for refreshHorses is sufficient.
+    _setLoading(true); // Indicates general loading due to subsequent refresh
     try {
       final newProfileUrl =
           await _horseService.uploadHorsePhoto(horseId, imageFile);
@@ -94,20 +106,24 @@ class HorseProvider extends ChangeNotifier {
       await refreshHorses();
     } catch (e) {
       debugPrint('Error updating horse photo in provider: $e');
-
       rethrow;
+    } finally {
+      _setLoading(
+          false); // Ensure loading is false even if refreshHorses has its own
     }
   }
 
   Future<void> loadHorses() async {
+    _setLoading(true);
     try {
       _horses = await _horseService.fetchHorses();
       _filteredHorses = List.from(_horses);
       notifyListeners();
     } catch (error) {
       debugPrint("Error loading horses in provider: $error");
-
       rethrow;
+    } finally {
+      _setLoading(false);
     }
   }
 
@@ -126,6 +142,9 @@ class HorseProvider extends ChangeNotifier {
   }
 
   Future<void> refreshHorses() async {
+    // loadHorses() already handles _setLoading and notifyListeners.
+    // If you want a distinct loading state for refresh, you could manage it here,
+    // but typically loadHorses covers it.
     await loadHorses();
   }
 
@@ -137,6 +156,7 @@ class HorseProvider extends ChangeNotifier {
       File? rightFront,
       File? leftHind,
       File? rightHind) async {
+    _setLoading(true);
     try {
       final success = await _horseService.addHorse(
         name,
@@ -155,8 +175,9 @@ class HorseProvider extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint("Error adding horse in provider: $e");
-
       rethrow;
+    } finally {
+      _setLoading(false);
     }
   }
 
@@ -169,5 +190,6 @@ class HorseProvider extends ChangeNotifier {
     } else {
       _profileImageProvider = null;
     }
+    notifyListeners(); // Notify if the image provider changes
   }
 }
