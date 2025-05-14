@@ -9,6 +9,7 @@ import 'package:http/http.dart' as http;
 
 class XRayCreation extends StatefulWidget {
   final Horse horse;
+
   const XRayCreation({super.key, required this.horse});
 
   @override
@@ -112,7 +113,7 @@ class _XRayCreationState extends State<XRayCreation> {
             _uploadedImageUrl = returnedUrl;
             _xrayLabels = parsedLabels;
             _localXrayImageFile = null;
-            _updateImageListener(); // Start listening for the network image
+            _updateImageListener();
             _isUploading = false;
           });
           if (mounted) {
@@ -136,7 +137,7 @@ class _XRayCreationState extends State<XRayCreation> {
           _isUploading = false;
           _uploadError = "Upload failed: ${e.toString()}";
           _xrayLabels = [];
-          _clearImageInfo(); // Clear image info on error
+          _clearImageInfo();
         });
       }
     }
@@ -202,7 +203,6 @@ class _XRayCreationState extends State<XRayCreation> {
   @override
   void didChangeDependencies() {
     super.didChangeDependencies();
-    // Re-listen if the image provider might have changed implicitly
     _updateImageListener();
   }
 
@@ -221,7 +221,7 @@ class _XRayCreationState extends State<XRayCreation> {
   void _handleImageError(dynamic exception, StackTrace? stackTrace) {
     debugPrint("Error loading image for dimension calculation: $exception");
     setState(() {
-      _imageInfo = null; // Clear info on error
+      _imageInfo = null;
     });
   }
 
@@ -256,7 +256,6 @@ class _XRayCreationState extends State<XRayCreation> {
 
   Offset _calculateMarkerPosition(XRayLabel label, Size containerSize,
       Size imageSize, FittedSizes fittedSizes) {
-    // Scale factor
     final double scale =
         fittedSizes.destination.width / fittedSizes.source.width;
     final double offsetX =

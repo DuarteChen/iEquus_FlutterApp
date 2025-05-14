@@ -14,8 +14,7 @@ class XRayLabel {
   factory XRayLabel.fromJson(String name, Map<String, dynamic> json) {
     return XRayLabel(
       name: name,
-      x: json['x'] as int? ??
-          0, // Provide default values or handle potential nulls
+      x: json['x'] as int? ?? 0,
       y: json['y'] as int? ?? 0,
       description:
           json['description'] as String? ?? 'No description available.',
