@@ -1,4 +1,3 @@
-import 'package:equus/providers/hospital_provider.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
 import 'package:equus/screens/appointment/horse_selector.dart';
 import 'package:equus/screens/horses/create_horse_screen.dart';
@@ -21,11 +20,7 @@ class _HomePageState extends State<HomePage> {
     await storage.delete(key: 'jwt');
 
     if (mounted) {
-      final hospitalProvider =
-          Provider.of<HospitalProvider>(context, listen: false);
-
-      Provider.of<VeterinarianProvider>(context, listen: false)
-          .clear(hospitalProvider);
+      Provider.of<VeterinarianProvider>(context, listen: false).clear();
 
       Navigator.pushReplacementNamed(context, '/login');
     }
@@ -56,8 +51,7 @@ class _HomePageState extends State<HomePage> {
           ),
           child: Column(
             mainAxisAlignment: MainAxisAlignment.center,
-            crossAxisAlignment:
-                CrossAxisAlignment.start, // Align text to the left
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               Text(
                 'Welcome,',

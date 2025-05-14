@@ -3,7 +3,6 @@ class Hospital {
   final String name;
   final String streetName;
   final String streetNumber;
-  final String postalCode;
   final String city;
   final String country;
   final String? optionalAddressField;
@@ -13,7 +12,6 @@ class Hospital {
     required this.name,
     required this.streetName,
     required this.streetNumber,
-    required this.postalCode,
     required this.city,
     required this.country,
     this.optionalAddressField,
@@ -25,7 +23,6 @@ class Hospital {
       name: map['name'],
       streetName: map['streetName'],
       streetNumber: map['streetNumber'],
-      postalCode: map['postalCode'],
       city: map['city'],
       country: map['country'],
       optionalAddressField: map['optionalAddressField'],
@@ -38,7 +35,6 @@ class Hospital {
       'name': name,
       'streetName': streetName,
       'streetNumber': streetNumber,
-      'postalCode': postalCode,
       'city': city,
       'country': country,
       'optionalAddressField': optionalAddressField,

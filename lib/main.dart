@@ -1,5 +1,5 @@
 import 'package:equus/providers/horse_provider.dart';
-import 'package:equus/providers/hospital_provider.dart';
+import 'package:equus/providers/login_provider.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
 import 'package:equus/screens/home/home.dart';
 import 'package:equus/screens/login/login_screen.dart';
@@ -7,8 +7,6 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:flutter_localizations/flutter_localizations.dart';
-import 'package:flutter_gen/gen_l10n/app_localizations.dart';
 
 void main() {
   WidgetsFlutterBinding.ensureInitialized();
@@ -25,8 +23,8 @@ void main() {
       MultiProvider(
         providers: [
           ChangeNotifierProvider(create: (_) => HorseProvider()),
-          ChangeNotifierProvider(create: (_) => HospitalProvider()),
           ChangeNotifierProvider(create: (_) => VeterinarianProvider()),
+          ChangeNotifierProvider(create: (_) => LoginProvider()),
         ],
         child: MyApp(initialRoute: initialRoute),
       ),
@@ -42,10 +40,8 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     if (initialRoute == '/home') {
       WidgetsBinding.instance.addPostFrameCallback((_) {
-        final hospitalProvider =
-            Provider.of<HospitalProvider>(context, listen: false);
         Provider.of<VeterinarianProvider>(context, listen: false)
-            .loadVeterinarianData(hospitalProvider);
+            .loadVeterinarianData();
 
         Provider.of<HorseProvider>(context, listen: false).loadHorses();
       });
@@ -73,12 +69,6 @@ class MyApp extends StatelessWidget {
         '/login': (context) => const LoginScreen(),
         '/home': (context) => const Home(),
       },
-      localizationsDelegates: const [
-        AppLocalizations.delegate,
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
       supportedLocales: const [
         Locale('en'),
         Locale('pt'),

@@ -2,7 +2,8 @@ import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
 import 'package:equus/models/veterinarian.dart';
-import 'package:equus/providers/hospital_provider.dart';
+import 'package:http/http.dart' as http;
+import 'dart:convert';
 
 class VeterinarianProvider with ChangeNotifier {
   Veterinarian? _veterinarian;
@@ -25,24 +26,45 @@ class VeterinarianProvider with ChangeNotifier {
     notifyListeners();
   }
 
-  void setVeterinarian(
-      Veterinarian veterinarian, HospitalProvider hospitalProvider) {
+  static Future<Veterinarian?> fromId(String token) async {
+    final url = Uri.parse('http://10.0.2.2:9090/veterinarian');
+    try {
+      final response = await http.get(
+        url,
+        headers: {'Authorization': 'Bearer $token'},
+      );
+
+      if (response.statusCode == 200) {
+        final data = jsonDecode(response.body);
+        return Veterinarian.fromMap(data);
+      } else {
+        print('Failed to load veterinarian: ${response.statusCode}');
+        return null;
+      }
+    } catch (e) {
+      print('Error fetching veterinarian: $e');
+      return null;
+    }
+  }
+
+  void setVeterinarian(Veterinarian veterinarian) {
     _veterinarian = veterinarian;
     _setError(null);
     _setLoading(false);
-    hospitalProvider.setHospital(veterinarian.hospital);
+    if (veterinarian.hospital != null) {
+      //TODO
+    }
     notifyListeners();
   }
 
-  void clear(HospitalProvider hospitalProvider) {
+  void clear() {
     _veterinarian = null;
-    hospitalProvider.clear();
     _error = null;
     _isLoading = false;
     notifyListeners();
   }
 
-  Future<void> loadVeterinarianData(HospitalProvider hospitalProvider) async {
+  Future<void> loadVeterinarianData() async {
     if (_isLoading) return;
 
     _setLoading(true);
@@ -58,16 +80,15 @@ class VeterinarianProvider with ChangeNotifier {
         throw Exception("Authentication token expired.");
       }
 
-      final fetchedVeterinarian = await Veterinarian.fromId(token);
+      final fetchedVeterinarian = await VeterinarianProvider.fromId(token);
       if (fetchedVeterinarian != null) {
-        setVeterinarian(fetchedVeterinarian, hospitalProvider);
+        setVeterinarian(fetchedVeterinarian);
       } else {
         throw Exception("Veterinarian data could not be retrieved.");
       }
     } catch (e) {
       debugPrint("Error loading veterinarian data: $e");
       _setError(e.toString());
-      clear(hospitalProvider);
     } finally {
       _setLoading(false);
     }
