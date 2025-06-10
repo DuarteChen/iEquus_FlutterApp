@@ -1,7 +1,10 @@
+import 'package:cached_network_image/cached_network_image.dart';
+import 'package:equus/models/horse.dart';
 import 'package:flutter/material.dart';
 import 'package:image_picker/image_picker.dart';
 
 class ProfileImagePreview extends StatelessWidget {
+  final Horse? horse;
   final ImageProvider<Object>? profileImageProvider;
   final Function(ImageSource) onImageSourceSelected;
 
@@ -9,6 +12,7 @@ class ProfileImagePreview extends StatelessWidget {
     super.key,
     this.profileImageProvider,
     required this.onImageSourceSelected,
+    this.horse,
   });
 
   @override
@@ -19,17 +23,24 @@ class ProfileImagePreview extends StatelessWidget {
       child: Stack(
         children: [
           Center(
-            child: profileImageProvider != null
-                ? Image(
-                    image: profileImageProvider!,
+            child: (horse != null && horse!.profilePicturePath != null)
+                ? CachedNetworkImage(
+                    imageUrl: horse!.profilePicturePath!,
                     fit: BoxFit.cover,
                     width: double.infinity,
                     height: double.infinity,
                   )
-                : Image.asset(
-                    'assets/images/horse_empty_profile_image.png',
-                    fit: BoxFit.cover,
-                  ),
+                : profileImageProvider != null
+                    ? Image(
+                        image: profileImageProvider!,
+                        fit: BoxFit.cover,
+                        width: double.infinity,
+                        height: double.infinity,
+                      )
+                    : Image.asset(
+                        'assets/images/horse_empty_profile_image.png',
+                        fit: BoxFit.cover,
+                      ),
           ),
           Positioned(
             top: 25,

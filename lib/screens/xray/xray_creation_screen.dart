@@ -74,7 +74,7 @@ class _XRayCreationState extends State<XRayCreation> {
     try {
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.0.2.2:9090/xray'),
+        Uri.parse('https://iequus.craveirochen.pt/xray'),
       );
       request.headers.addAll(headers);
       request.fields['horseId'] = widget.horse.idHorse.toString();

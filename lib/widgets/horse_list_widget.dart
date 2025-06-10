@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'package:equus/providers/horse_provider.dart';
 
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:equus/models/horse.dart';
 
 typedef HorseWidgetBuilder = Widget Function(Horse horse);
@@ -91,22 +92,21 @@ class _HorsesListWidgetState extends State<HorsesListWidget> {
               child: (horse.profilePicturePath != null &&
                       horse.profilePicturePath!.isNotEmpty)
                   ? ClipOval(
-                      child: Image.network(
-                        // TODO: Ensure horse.profilePicturePath is a full URL or construct it here
-                        // e.g., 'http://your-backend.com/static/${horse.profilePicturePath!}'
-                        horse.profilePicturePath!,
-                        width: 40,
-                        height: 40,
-                        fit: BoxFit.cover,
-                        loadingBuilder: (context, child, loadingProgress) {
-                          if (loadingProgress == null) return child;
-                          return const Center(
-                              child:
-                                  CircularProgressIndicator(strokeWidth: 2.0));
-                        },
-                        errorBuilder: (context, error, stackTrace) {
-                          return _defaultHorseImage(); // Fallback on error
-                        },
+                      child: CachedNetworkImage(
+                        imageUrl: horse.profilePicturePath!,
+                        imageBuilder: (context, imageProvider) => Container(
+                          width: 40,
+                          height: 40,
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            image: DecorationImage(
+                                image: imageProvider, fit: BoxFit.cover),
+                          ),
+                        ),
+                        placeholder: (context, url) =>
+                            const CircularProgressIndicator(strokeWidth: 2.0),
+                        errorWidget: (context, url, error) =>
+                            _defaultHorseImage(), // Fallback on error
                       ),
                     )
                   : _defaultHorseImage(), // Fallback if no path

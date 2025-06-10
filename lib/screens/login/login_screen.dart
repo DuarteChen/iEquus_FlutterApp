@@ -1,5 +1,6 @@
 import 'package:equus/providers/login_provider.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
+import 'package:equus/screens/login/register_screen.dart';
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 
@@ -156,6 +157,19 @@ class LoginScreenState extends State<LoginScreen> {
                             )
                           : const Text('Login'),
                     ),
+                    const SizedBox(height: 20),
+                    TextButton(
+                      onPressed: () {
+                        Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => const RegisterScreen()),
+                        );
+                      },
+                      child: Text('Don\'t have an account? Register here',
+                          style: TextStyle(
+                              color: Theme.of(context).colorScheme.primary)),
+                    )
                   ],
                 ),
               ),

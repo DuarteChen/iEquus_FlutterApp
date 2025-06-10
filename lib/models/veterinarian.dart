@@ -3,7 +3,7 @@ import 'package:equus/models/hospital.dart';
 import 'package:equus/models/human.dart';
 
 class Veterinarian extends Human {
-  String idCedulaProfissional;
+  String? idCedulaProfissional;
   Hospital? hospital;
 
   Veterinarian({
@@ -11,7 +11,7 @@ class Veterinarian extends Human {
     super.email,
     super.phoneNumber,
     super.phoneCountryCode,
-    required this.idCedulaProfissional,
+    this.idCedulaProfissional,
     required super.idHuman,
     this.hospital,
   });

@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'package:equus/providers/horse_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:http/http.dart' as http;
@@ -31,8 +32,6 @@ class LoginProvider with ChangeNotifier {
     }
   }
 
-  /// Performs the login process.
-  /// Returns true if login and data fetch were successful, false otherwise.
   Future<bool> login(
       String email, String password, BuildContext context) async {
     if (_isLoading) return false;
@@ -42,7 +41,7 @@ class LoginProvider with ChangeNotifier {
 
     final client = http.Client();
     try {
-      final url = Uri.parse('http://10.0.2.2:9090/login');
+      final url = Uri.parse('https://iequus.craveirochen.pt/login');
 
       var request = http.MultipartRequest('POST', url);
 
@@ -91,6 +90,23 @@ class LoginProvider with ChangeNotifier {
     }
   }
 
-  // Optional: Add a method to check initial login status using stored token
-  // This could be in VeterinarianProvider as well, depending on app flow.
+  /// Performs the logout process.
+  Future<void> logout(BuildContext context) async {
+    _setLoading(true); // Indicate activity
+    try {
+      await storage.delete(key: 'jwt');
+      // Clear VeterinarianProvider data
+      // Ensure context is still valid if this method involves async operations before this line.
+      if (context.mounted) {
+        Provider.of<VeterinarianProvider>(context, listen: false).clear();
+        Provider.of<HorseProvider>(context, listen: false).clear();
+      }
+      _setError(''); // Clear any previous errors
+    } catch (e) {
+      debugPrint('Logout error: $e');
+      _setError('An error occurred during logout.'); // Optionally inform user
+    } finally {
+      _setLoading(false);
+    }
+  }
 }

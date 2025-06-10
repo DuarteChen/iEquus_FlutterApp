@@ -121,6 +121,7 @@ class HorseProvider extends ChangeNotifier {
       notifyListeners();
     } catch (error) {
       debugPrint("Error loading horses in provider: $error");
+      //TODO Login again
       rethrow;
     } finally {
       _setLoading(false);
@@ -179,6 +180,13 @@ class HorseProvider extends ChangeNotifier {
     } finally {
       _setLoading(false);
     }
+  }
+
+  void clear() {
+    _horses = [];
+    _filteredHorses = [];
+    _isLoading = false;
+    notifyListeners();
   }
 
   // --- Helper Methods ---

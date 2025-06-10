@@ -2,7 +2,9 @@ import 'dart:io';
 import 'package:equus/models/client.dart';
 import 'package:equus/models/horse.dart';
 import 'package:equus/providers/horse_provider.dart';
-import 'package:equus/screens/appointment/horse_selector.dart';
+import 'package:equus/screens/appointment/create_appointment.dart';
+import 'package:equus/screens/measure/create_measure_screen.dart';
+import 'package:equus/screens/xray/xray_creation_screen.dart';
 import 'package:equus/widgets/main_button_blue.dart';
 import 'package:equus/widgets/profile_image_preview.dart';
 import 'package:flutter/material.dart';
@@ -154,6 +156,7 @@ class HorseProfileState extends State<HorseProfile> {
                   children: [
                     // Profile Image Section
                     ProfileImagePreview(
+                      horse: widget.horse,
                       profileImageProvider: horseProvider.profileImageProvider,
                       onImageSourceSelected: pickImage,
                       //isLoading: _isUpdatingPhoto, // Pass loading state
@@ -253,8 +256,9 @@ class HorseProfileState extends State<HorseProfile> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => HorseSelector(
-                                            selectorType: 'measure'),
+                                        builder: (context) =>
+                                            CreateMeasureScreen(
+                                                horse: widget.horse),
                                       ),
                                     );
                                   },
@@ -269,8 +273,8 @@ class HorseProfileState extends State<HorseProfile> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => HorseSelector(
-                                            selectorType: 'x-ray'),
+                                        builder: (context) =>
+                                            XRayCreation(horse: widget.horse),
                                       ),
                                     );
                                   },
@@ -290,8 +294,8 @@ class HorseProfileState extends State<HorseProfile> {
                                     Navigator.push(
                                       context,
                                       MaterialPageRoute(
-                                        builder: (context) => HorseSelector(
-                                            selectorType: 'appointment'),
+                                        builder: (context) => CreateAppointment(
+                                            horse: widget.horse),
                                       ),
                                     );
                                   },

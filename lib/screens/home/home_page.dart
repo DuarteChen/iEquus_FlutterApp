@@ -1,10 +1,10 @@
 import 'package:equus/models/veterinarian.dart';
+import 'package:equus/providers/login_provider.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
 import 'package:equus/screens/appointment/horse_selector.dart';
 import 'package:equus/screens/horses/create_horse_screen.dart';
 import 'package:equus/widgets/main_button_blue.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:provider/provider.dart';
 
 class HomePage extends StatefulWidget {
@@ -15,15 +15,13 @@ class HomePage extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomePage> {
-  final storage = const FlutterSecureStorage();
-
   Future<void> _logout() async {
-    await storage.delete(key: 'jwt');
-
     if (mounted) {
-      Provider.of<VeterinarianProvider>(context, listen: false).clear();
+      await Provider.of<LoginProvider>(context, listen: false).logout(context);
 
-      Navigator.pushReplacementNamed(context, '/login');
+      if (mounted) {
+        Navigator.pushReplacementNamed(context, '/login');
+      }
     }
   }
 
@@ -165,7 +163,7 @@ class _HomePageState extends State<HomePage> {
       builder: (context, vetProvider, child) {
         final Veterinarian? veterinarian = vetProvider.veterinarian;
         final String nameText = veterinarian?.name ?? 'Loading...';
-        final String cedulaText = veterinarian?.idCedulaProfissional ?? '---';
+        final String? cedulaText = veterinarian?.idCedulaProfissional;
 
         // Determine the widget to display for the hospital logo/placeholder
         Widget? hospitalLogoWidget;
@@ -238,13 +236,15 @@ class _HomePageState extends State<HomePage> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-                  Text(
-                    cedulaText,
-                    style: TextStyle(
-                      color: Colors.white.withOpacity(0.75),
-                      fontSize: 14,
-                    ),
-                  ),
+                  cedulaText != null && cedulaText.isNotEmpty
+                      ? Text(
+                          cedulaText,
+                          style: TextStyle(
+                            color: Colors.white.withOpacity(0.75),
+                            fontSize: 14,
+                          ),
+                        )
+                      : SizedBox(),
                 ],
               ),
               hospitalLogoWidget,

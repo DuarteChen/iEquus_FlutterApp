@@ -6,7 +6,7 @@ import 'package:equus/models/horse.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import secure storage
 
 class HorseService {
-  static const String _baseUrl = 'http://10.0.2.2:9090';
+  static const String _baseUrl = 'https://iequus.craveirochen.pt';
   final _storage = const FlutterSecureStorage();
 
   // Helper function to get headers with JWT token

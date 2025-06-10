@@ -154,7 +154,7 @@ class Measure {
 
       var request = http.MultipartRequest(
         'POST',
-        Uri.parse('http://10.0.2.2:9090/measure'),
+        Uri.parse('https://iequus.craveirochen.pt/measure'),
       );
       request.headers.addAll(headers);
 
@@ -226,7 +226,7 @@ class Measure {
 
       var request = http.MultipartRequest(
         'PUT',
-        Uri.parse('http://10.0.2.2:9090/measure/$id'),
+        Uri.parse('https://iequus.craveirochen.pt/measure/$id'),
       );
       request.headers.addAll(headers);
 
@@ -271,7 +271,7 @@ class Measure {
       }
 
       final response = await http.delete(
-        Uri.parse('http://10.0.2.2:9090/measure/$id'),
+        Uri.parse('https://iequus.craveirochen.pt/measure/$id'),
         headers: headers,
       );
 

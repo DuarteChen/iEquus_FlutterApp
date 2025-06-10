@@ -9,6 +9,15 @@ class Home extends StatefulWidget {
   State<Home> createState() => _HomeState();
 }
 
+class _BottomNavItem {
+  final Widget page;
+  final String title;
+  final Widget icon;
+
+  const _BottomNavItem(
+      {required this.page, required this.title, required this.icon});
+}
+
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
 
@@ -18,33 +27,37 @@ class _HomeState extends State<Home> {
     });
   }
 
-  String _getAppBarTitle([int? requiredPage]) {
-    int index = requiredPage ?? _selectedIndex;
-    switch (index) {
-      case 0:
-        return 'Home';
-      case 1:
-        return 'Horses';
-      case 2:
-        return 'Owners';
-      case 3:
-        return 'Profile';
-      default:
-        return 'App';
-    }
-  }
+  static final List<_BottomNavItem> _navItems = [
+    _BottomNavItem(
+      page: const HomePage(),
+      title: 'Home',
+      icon: const Icon(Icons.home),
+    ),
+    _BottomNavItem(
+      page: const HorsesListScreen(),
+      title: 'Horses',
+      icon: const ImageIcon(AssetImage('assets/icons/horse_icon.png')),
+    ),
+    _BottomNavItem(
+      page: const Center(
+          child: Text("Owners Page (Not Implemented)")), // Placeholder
+      title: 'Owners',
+      icon: const Icon(Icons.people),
+    ),
+    _BottomNavItem(
+      page: const Center(
+          child: Text("Profile Page (Not Implemented)")), // Placeholder
+      title: 'Profile',
+      icon: const Icon(Icons.person),
+    ),
+  ];
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       body: IndexedStack(
         index: _selectedIndex,
-        children: [
-          const HomePage(),
-          const HorsesListScreen(),
-          //OwnersPage(),
-          //ProfilePage(),
-        ],
+        children: _navItems.map((item) => item.page).toList(),
       ),
       bottomNavigationBar: BottomNavigationBar(
         showSelectedLabels: true,
@@ -52,28 +65,17 @@ class _HomeState extends State<Home> {
         enableFeedback: true,
         currentIndex: _selectedIndex,
         onTap: _onItemTapped,
-        items: <BottomNavigationBarItem>[
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.home),
-            label: _getAppBarTitle(0),
-            backgroundColor: Theme.of(context).primaryColor,
-          ),
-          BottomNavigationBarItem(
-            icon: const ImageIcon(AssetImage('assets/icons/horse_icon.png')),
-            label: _getAppBarTitle(1),
-            backgroundColor: Theme.of(context).primaryColor,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.people),
-            label: _getAppBarTitle(2),
-            backgroundColor: Theme.of(context).primaryColor,
-          ),
-          BottomNavigationBarItem(
-            icon: const Icon(Icons.person),
-            label: _getAppBarTitle(3),
-            backgroundColor: Theme.of(context).primaryColor,
-          ),
-        ],
+        type: BottomNavigationBarType.fixed,
+        backgroundColor: Theme.of(context).primaryColor,
+        selectedItemColor: Theme.of(context).colorScheme.onPrimary,
+        unselectedItemColor:
+            Theme.of(context).colorScheme.onPrimary.withOpacity(0.7),
+        items: _navItems.map((item) {
+          return BottomNavigationBarItem(
+            icon: item.icon,
+            label: item.title,
+          );
+        }).toList(),
       ),
     );
   }

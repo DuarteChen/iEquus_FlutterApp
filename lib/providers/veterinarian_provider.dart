@@ -27,7 +27,7 @@ class VeterinarianProvider with ChangeNotifier {
   }
 
   static Future<Veterinarian?> fromId(String token) async {
-    final url = Uri.parse('http://10.0.2.2:9090/veterinarian');
+    final url = Uri.parse('https://iequus.craveirochen.pt/veterinarian');
     try {
       final response = await http.get(
         url,
