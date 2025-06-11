@@ -1,7 +1,7 @@
-import 'dart:convert';
 import 'package:equus/models/hospital.dart';
+import 'package:equus/providers/veterinarian_provider.dart';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
+import 'package:provider/provider.dart';
 
 // Helper class for country phone codes
 class CountryPhoneCode {
@@ -74,6 +74,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
   @override
   void initState() {
     super.initState();
+    // Set default country code
     _fetchHospitals();
   }
 
@@ -81,6 +82,14 @@ class _RegisterScreenState extends State<RegisterScreen> {
   void didChangeDependencies() {
     super.didChangeDependencies();
     // Set default country code after the list is initialized
+    // Moved default country code setting to _fetchHospitals completion or initState
+    if (_selectedCountryPhoneCode == null &&
+        _availablePhoneCountryCodes.isNotEmpty) {
+      _selectedCountryPhoneCode = _availablePhoneCountryCodes.firstWhere(
+        (c) => c.code == '+351', // Default to PT
+        orElse: () => _availablePhoneCountryCodes.first,
+      );
+    }
   }
 
   Future<void> _fetchHospitals() async {
@@ -88,34 +97,24 @@ class _RegisterScreenState extends State<RegisterScreen> {
       _isLoadingHospitals = true;
     });
     try {
-      final response =
-          await http.get(Uri.parse('https://iequus.craveirochen.pt/hospitals'));
-      if (response.statusCode == 200) {
-        final List<dynamic> hospitalData = jsonDecode(response.body);
-        setState(() {
-          _hospitals =
-              hospitalData.map((data) => Hospital.fromMap(data)).toList();
-          // Set default country code after hospitals are loaded (or just in initState)
-          // Let's set it in initState as it's not dependent on hospitals
-          _selectedCountryPhoneCode = _availablePhoneCountryCodes.firstWhere(
-            (c) => c.code == '+351', // Default to PT
-            orElse: () => _availablePhoneCountryCodes.isNotEmpty
-                ? _availablePhoneCountryCodes.first
-                : CountryPhoneCode(code: '', countryAbbreviation: ''),
-          );
-          _isLoadingHospitals = false;
-        });
-      } else {
-        setState(() {
-          _isLoadingHospitals = false;
-          // Handle error, maybe show a snackbar
-          debugPrint('Failed to load hospitals: ${response.statusCode}');
-        });
-      }
+      final vetProvider =
+          Provider.of<VeterinarianProvider>(context, listen: false);
+      final fetchedHospitals = await vetProvider.fetchHospitals();
+      setState(() {
+        _hospitals = fetchedHospitals;
+        _isLoadingHospitals = false;
+      });
     } catch (e) {
       setState(() {
         _isLoadingHospitals = false;
         debugPrint('Error fetching hospitals: $e');
+        // Optionally show a snackbar
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+                content: Text('Failed to load hospitals: ${e.toString()}')),
+          );
+        }
       });
     }
   }
@@ -127,56 +126,41 @@ class _RegisterScreenState extends State<RegisterScreen> {
         _registrationError = '';
       });
 
-      final url = Uri.parse('https://iequus.craveirochen.pt/register');
       try {
-        var request = http.MultipartRequest('POST', url);
+        final vetProvider =
+            Provider.of<VeterinarianProvider>(context, listen: false);
+        await vetProvider.registerVeterinarian(
+          name: _nameController.text,
+          email: _emailController.text,
+          password: _passwordController.text,
+          idCedulaProfissional: _idCedulaProfissionalController.text,
+          phoneNumber: _phoneNumberController.text.isNotEmpty
+              ? _phoneNumberController.text
+              : null,
+          phoneCountryCode: (_phoneNumberController.text.isNotEmpty &&
+                  _selectedCountryPhoneCode != null)
+              ? _selectedCountryPhoneCode!
+                  .countryAbbreviation // Send abbreviation
+              : null,
+          hospitalId: _selectedHospital?.id,
+        );
 
-        // Add fields to the multipart request
-        request.fields['name'] = _nameController.text;
-        request.fields['email'] = _emailController.text;
-        request.fields['password'] = _passwordController.text;
-        request.fields['idCedulaProfissional'] =
-            _idCedulaProfissionalController.text;
-
-        // Add optional fields only if they have a value
-        if (_phoneNumberController.text.isNotEmpty) {
-          request.fields['phoneNumber'] = _phoneNumberController.text;
-        }
-        // Only add country code if a phone number is provided AND a code is selected
-        if (_phoneNumberController.text.isNotEmpty &&
-            _selectedCountryPhoneCode != null) {
-          request.fields['phoneCountryCode'] = _selectedCountryPhoneCode!
-              .countryAbbreviation; // Send abbreviation
-        }
-
-        if (_selectedHospital != null) {
-          request.fields['hospitalId'] = _selectedHospital!.id.toString();
-        }
-
-        var streamedResponse = await request.send();
-        var response = await http.Response.fromStream(streamedResponse);
-
-        if (response.statusCode == 201 || response.statusCode == 200) {
-          // Registration successful
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                  content: Text('Registration successful! Please login.')),
-            );
-            Navigator.pop(context); // Go back to login screen
-          }
-        } else {
-          final responseData = jsonDecode(response.body);
-          setState(() {
-            _registrationError =
-                responseData['msg'] ?? 'Registration failed. Please try again.';
-          });
+        // Registration successful
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+                content: Text('Registration successful! Please login.')),
+          );
+          Navigator.pop(context); // Go back to login screen
         }
       } catch (e) {
-        setState(() {
-          _registrationError = 'An error occurred: ${e.toString()}';
-        });
-        debugPrint('Registration error: $e');
+        // Error message is set by the provider, but we can also catch specific UI messages
+        if (mounted) {
+          setState(() {
+            _registrationError =
+                'Registration failed: ${e.toString().replaceFirst("Exception: ", "")}';
+          });
+        }
       } finally {
         setState(() {
           _isRegistering = false;

@@ -3,7 +3,7 @@ import 'dart:io';
 import 'package:equus/models/client.dart';
 import 'package:flutter/material.dart';
 import 'package:equus/models/horse.dart';
-import 'package:equus/services/horse_service.dart';
+import 'package:equus/api_services/horse_service.dart';
 
 class HorseProvider extends ChangeNotifier {
   final HorseService _horseService = HorseService();
@@ -86,7 +86,7 @@ class HorseProvider extends ChangeNotifier {
     _setLoading(true); // Indicates general loading due to subsequent refresh
     try {
       final newProfileUrl =
-          await _horseService.uploadHorsePhoto(horseId, imageFile);
+          await _horseService.uploadHorseProfilePhoto(horseId, imageFile);
 
       if (_currentHorse?.idHorse == horseId) {
         _currentHorse = Horse(
@@ -103,7 +103,7 @@ class HorseProvider extends ChangeNotifier {
 
       _updateProfileImageProvider(newProfileUrl);
 
-      await refreshHorses();
+      await loadHorses();
     } catch (e) {
       debugPrint('Error updating horse photo in provider: $e');
       rethrow;
@@ -142,13 +142,6 @@ class HorseProvider extends ChangeNotifier {
     notifyListeners();
   }
 
-  Future<void> refreshHorses() async {
-    // loadHorses() already handles _setLoading and notifyListeners.
-    // If you want a distinct loading state for refresh, you could manage it here,
-    // but typically loadHorses covers it.
-    await loadHorses();
-  }
-
   Future<void> addHorse(
       String name,
       DateTime? birthDate,
@@ -170,7 +163,7 @@ class HorseProvider extends ChangeNotifier {
       );
 
       if (success) {
-        await refreshHorses();
+        await loadHorses();
       } else {
         throw Exception("Failed to add horse (service returned false)");
       }

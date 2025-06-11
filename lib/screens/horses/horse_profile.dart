@@ -234,7 +234,7 @@ class HorseProfileState extends State<HorseProfile> {
                                 ),
                               ),
                               title: Text(
-                                currentHorse.dateName_birthDateToString() ??
+                                currentHorse.dateNameBirthDateToString() ??
                                     'Not specified',
                                 style: Theme.of(context).textTheme.bodyLarge,
                               ),

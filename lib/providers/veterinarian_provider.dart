@@ -1,9 +1,11 @@
+import 'package:equus/api_services/hospital_service.dart';
+import 'package:equus/api_services/veterinarian_service.dart'; // Import VeterinarianService
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:jwt_decoder/jwt_decoder.dart';
+import 'package:equus/models/hospital.dart';
 import 'package:equus/models/veterinarian.dart';
-import 'package:http/http.dart' as http;
-import 'dart:convert';
+import 'dart:developer' as developer; // For logging
 
 class VeterinarianProvider with ChangeNotifier {
   Veterinarian? _veterinarian;
@@ -15,6 +17,8 @@ class VeterinarianProvider with ChangeNotifier {
   String? get error => _error;
 
   bool get hasVeterinarian => _veterinarian != null;
+  final VeterinarianService _veterinarianService = VeterinarianService();
+  final HospitalService _hospitalService = HospitalService();
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -24,27 +28,6 @@ class VeterinarianProvider with ChangeNotifier {
   void _setError(String? message) {
     _error = message;
     notifyListeners();
-  }
-
-  static Future<Veterinarian?> fromId(String token) async {
-    final url = Uri.parse('https://iequus.craveirochen.pt/veterinarian');
-    try {
-      final response = await http.get(
-        url,
-        headers: {'Authorization': 'Bearer $token'},
-      );
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(response.body);
-        return Veterinarian.fromMap(data);
-      } else {
-        print('Failed to load veterinarian: ${response.statusCode}');
-        return null;
-      }
-    } catch (e) {
-      print('Error fetching veterinarian: $e');
-      return null;
-    }
   }
 
   void setVeterinarian(Veterinarian veterinarian) {
@@ -80,15 +63,56 @@ class VeterinarianProvider with ChangeNotifier {
         throw Exception("Authentication token expired.");
       }
 
-      final fetchedVeterinarian = await VeterinarianProvider.fromId(token);
+      final fetchedVeterinarian =
+          await _veterinarianService.fetchCurrentVeterinarian();
       if (fetchedVeterinarian != null) {
         setVeterinarian(fetchedVeterinarian);
       } else {
         throw Exception("Veterinarian data could not be retrieved.");
       }
     } catch (e) {
-      debugPrint("Error loading veterinarian data: $e");
+      developer.log("Error loading veterinarian data in provider: $e");
       _setError(e.toString());
+    } finally {
+      _setLoading(false);
+    }
+  }
+
+  Future<List<Hospital>> fetchHospitals() async {
+    // No loading/error state management here as it's directly used by the screen
+    // If global state for hospitals was needed, you'd add it.
+    try {
+      return await _hospitalService.fetchHospitals();
+    } catch (e) {
+      developer.log("Error in VeterinarianProvider.fetchHospitals: $e");
+      rethrow; // Rethrow to be caught by the UI
+    }
+  }
+
+  Future<void> registerVeterinarian({
+    required String name,
+    required String email,
+    required String password,
+    String? idCedulaProfissional,
+    String? phoneNumber,
+    String? phoneCountryCode,
+    int? hospitalId,
+  }) async {
+    _setLoading(true);
+    _setError(null);
+    try {
+      await _veterinarianService.registerVeterinarian(
+        name: name,
+        email: email,
+        password: password,
+        idCedulaProfissional: idCedulaProfissional,
+        phoneNumber: phoneNumber,
+        phoneCountryCode: phoneCountryCode,
+        hospitalId: hospitalId,
+      );
+    } catch (e) {
+      _setError(e.toString());
+      rethrow; // Rethrow to allow UI to handle specific error messages if needed
     } finally {
       _setLoading(false);
     }

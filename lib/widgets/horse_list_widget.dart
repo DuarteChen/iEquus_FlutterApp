@@ -67,10 +67,8 @@ class _HorsesListWidgetState extends State<HorsesListWidget> {
         ),
       ),
       body: RefreshIndicator(
-        onRefresh: horseProvider.refreshHorses,
+        onRefresh: horseProvider.loadHorses,
         child: horseProvider.horses.isEmpty
-            // Assuming HorseProvider has an 'isLoading' boolean property.
-            // This helps distinguish initial loading from an empty list after loading.
             ? (horseProvider.isLoading
                 ? const Center(child: CircularProgressIndicator())
                 : const Center(child: Text("No horses registered")))

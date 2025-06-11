@@ -477,7 +477,7 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
             }
             if (mounted) Navigator.pop(context);
           },
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.delete_outline),
         ),
         title: Text("Measure for ${widget.horse.name}"),
         centerTitle: true,

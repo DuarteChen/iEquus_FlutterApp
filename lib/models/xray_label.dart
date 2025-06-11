@@ -11,13 +11,12 @@ class XRayLabel {
     required this.description,
   });
 
-  factory XRayLabel.fromJson(String name, Map<String, dynamic> json) {
+  factory XRayLabel.fromJson(Map<String, dynamic> json) {
     return XRayLabel(
-      name: name,
+      name: json['label'] as String? ?? 'Unknown Label',
       x: json['x'] as int? ?? 0,
       y: json['y'] as int? ?? 0,
-      description:
-          json['description'] as String? ?? 'No description available.',
+      description: json['description'] as String? ?? 'No description',
     );
   }
 }

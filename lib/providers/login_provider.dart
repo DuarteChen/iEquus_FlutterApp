@@ -1,8 +1,8 @@
-import 'dart:convert';
+import 'package:equus/api_services/login_service.dart'; // Import LoginService
+import 'package:equus/api_services/veterinarian_service.dart'; // Ensure this is imported
 import 'package:equus/providers/horse_provider.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
-import 'package:http/http.dart' as http;
 import 'package:provider/provider.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
 
@@ -14,6 +14,9 @@ class LoginProvider with ChangeNotifier {
   String get errorMessage => _errorMessage;
 
   final storage = const FlutterSecureStorage();
+  final LoginService _loginService = LoginService();
+  final VeterinarianService _veterinarianService =
+      VeterinarianService(); // Instantiate VeterinarianService
 
   void _setLoading(bool value) {
     _isLoading = value;
@@ -39,26 +42,18 @@ class LoginProvider with ChangeNotifier {
     _setLoading(true);
     _setError('');
 
-    final client = http.Client();
     try {
-      final url = Uri.parse('https://iequus.craveirochen.pt/login');
+      // Call the LoginService
+      final data = await _loginService.login(email, password);
 
-      var request = http.MultipartRequest('POST', url);
-
-      request.fields['email'] = email;
-      request.fields['password'] = password;
-
-      final streamedResponse = await client.send(request);
-      final response = await http.Response.fromStream(streamedResponse);
-
-      final data = jsonDecode(response.body);
-
-      if (response.statusCode == 200) {
+      // Check if login was successful based on service's outcome (it throws on failure)
+      if (data.containsKey('access_token')) {
         final token = data['access_token'];
         await storage.write(key: 'jwt', value: token);
 
-        // Fetch veterinarian data using the token
-        final veterinarian = await VeterinarianProvider.fromId(token);
+        // Fetch veterinarian data using the instance method which relies on stored token
+        final veterinarian =
+            await _veterinarianService.fetchCurrentVeterinarian();
 
         if (veterinarian != null) {
           if (context.mounted) {
@@ -73,19 +68,15 @@ class LoginProvider with ChangeNotifier {
           await storage.delete(key: 'jwt'); // Clear token if data fetch fails
           return false;
         }
-      } else {
-        // Login failed based on status code
-        _setError(
-            data['msg'] ?? 'Login failed. Status code: ${response.statusCode}');
-        return false;
       }
+      // Should not be reached if service throws, but as a fallback:
+      _setError('Login failed: Unexpected response from server.');
+      return false;
     } catch (e) {
-      // Handle network or other errors
       debugPrint('Login error: $e'); // Use debugPrint for errors
       _setError('An error occurred: ${e.toString()}');
       return false;
     } finally {
-      client.close();
       _setLoading(false);
     }
   }

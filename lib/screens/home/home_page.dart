@@ -1,7 +1,7 @@
 import 'package:equus/models/veterinarian.dart';
 import 'package:equus/providers/login_provider.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
-import 'package:equus/screens/appointment/horse_selector.dart';
+import 'package:equus/screens/appointment/horse_list_selector.dart';
 import 'package:equus/screens/horses/create_horse_screen.dart';
 import 'package:equus/widgets/main_button_blue.dart';
 import 'package:flutter/material.dart';

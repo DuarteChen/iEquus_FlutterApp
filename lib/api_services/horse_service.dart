@@ -1,35 +1,17 @@
 import 'dart:convert';
+import 'dart:developer' as developer;
 import 'dart:io';
+import 'package:equus/config/api_constants.dart';
 import 'package:equus/models/client.dart';
 import 'package:http/http.dart' as http;
 import 'package:equus/models/horse.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart'; // Import secure storage
 
 class HorseService {
-  static const String _baseUrl = 'https://iequus.craveirochen.pt';
-  final _storage = const FlutterSecureStorage();
-
-  // Helper function to get headers with JWT token
-  Future<Map<String, String>> _getHeaders({bool isMultipart = false}) async {
-    final token = await _storage.read(key: 'jwt');
-    final headers = <String, String>{};
-
-    // Set Content-Type for JSON requests unless it's multipart
-    if (!isMultipart) {
-      headers['Content-Type'] = 'application/json; charset=UTF-8';
-    }
-    // Add Authorization header if token exists
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-    return headers;
-  }
-
   Future<List<Horse>> fetchHorses() async {
     try {
-      final headers = await _getHeaders(); // Get headers
+      final headers = await HttpClient().getHeaders();
       final response = await http.get(
-        Uri.parse('$_baseUrl/horses'),
+        Uri.parse('$apiBaseUrl/horses'),
         headers: headers, // Add headers to the request
       );
 
@@ -38,17 +20,15 @@ class HorseService {
         return horseJson.map((json) => Horse.fromJson(json)).toList();
       } else if (response.statusCode == 401) {
         // Handle unauthorized access, maybe redirect to login
-        print('Unauthorized access fetching horses.');
         throw Exception('Unauthorized: Please login again.');
       } else {
         // Handle other errors
-        print('Failed to fetch horses: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        developer.log('Failed to fetch horses: ${response.statusCode}');
         // Return empty list or throw a more specific error
         return []; // Returning empty list as per original logic on error
       }
     } catch (e) {
-      print("Error fetching horses: $e");
+      developer.log('Error fetching horses: $e');
       // Rethrow or handle as appropriate for your app's flow
       throw Exception('Failed to fetch horses. Error: $e');
     }
@@ -64,10 +44,11 @@ class HorseService {
       File? leftHind,
       File? rightHind) async {
     try {
-      var request = http.MultipartRequest('POST', Uri.parse('$_baseUrl/horse'));
+      var request =
+          http.MultipartRequest('POST', Uri.parse('$apiBaseUrl/horse'));
 
       // Get headers, indicating it's a multipart request
-      final headers = await _getHeaders(isMultipart: true);
+      final headers = await HttpClient().getHeaders(isMultipart: true);
       request.headers.addAll(headers); // Add headers to the request
 
       request.fields['name'] = name;
@@ -97,47 +78,48 @@ class HorseService {
       if (response.statusCode == 201) {
         return true;
       } else {
-        print('Failed to add horse: ${response.statusCode}');
-        print('Response body: $responseBody');
+        developer.log('Failed to fetch horses: ${response.statusCode}');
+        developer.log('Response body: $responseBody');
+
         // Consider throwing an exception with the message from responseBody if available
         return false;
       }
     } catch (e) {
-      print("Error adding horse: $e");
+      developer.log("Error adding horse: $e");
       return false;
     }
   }
 
   Future<Horse> fetchHorse(int horseId) async {
     try {
-      final headers = await _getHeaders();
+      final headers = await HttpClient().getHeaders();
       final response = await http.get(
-        Uri.parse('$_baseUrl/horse/$horseId'),
+        Uri.parse('$apiBaseUrl/horse/$horseId'),
         headers: headers,
       );
 
       if (response.statusCode == 200) {
         return Horse.fromJson(json.decode(response.body));
       } else if (response.statusCode == 401) {
-        print('Unauthorized access fetching horse $horseId.');
+        developer.log('Unauthorized access fetching horse $horseId.');
         throw Exception('Unauthorized: Please login again.');
       } else {
-        print('Failed to fetch horse $horseId: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        developer.log('Failed to fetch horses: ${response.statusCode}');
+        developer.log('Response body: ${response.body}');
         throw Exception('Failed to fetch horse data');
       }
     } catch (e) {
-      print("Error fetching horse $horseId: $e");
+      developer.log("Error fetching horse $horseId: $e");
       throw Exception('Failed to fetch horse data. Error: $e');
     }
   }
 
   Future<List<Client>> fetchHorseClients(int horseId) async {
     try {
-      final headers = await _getHeaders(); // Get headers
+      final headers = await HttpClient().getHeaders(); // Get headers
       final response = await http.get(
         // Ensure endpoint is correct, maybe /horses/$horseId/clients ?
-        Uri.parse('$_baseUrl/horse/$horseId/clients'),
+        Uri.parse('$apiBaseUrl/horse/$horseId/clients'),
         headers: headers, // Add headers
       );
 
@@ -145,30 +127,31 @@ class HorseService {
         final List<dynamic> clientsJson = json.decode(response.body);
         return clientsJson.map((json) => Client.fromJson(json)).toList();
       } else if (response.statusCode == 401) {
-        print('Unauthorized access fetching clients for horse $horseId.');
+        developer
+            .log('Unauthorized access fetching clients for horse $horseId.');
         throw Exception('Unauthorized: Please login again.');
       } else {
-        print(
+        developer.log(
             'Failed to fetch clients for horse $horseId: ${response.statusCode}');
-        print('Response body: ${response.body}');
+        developer.log('Response body: ${response.body}');
         throw Exception('Failed to fetch horse clients');
       }
     } catch (e) {
-      print("Error fetching clients for horse $horseId: $e");
+      developer.log("Error fetching clients for horse $horseId: $e");
       throw Exception('Failed to fetch horse clients. Error: $e');
     }
   }
 
   // Made this non-static to access _getHeaders
-  Future<String> uploadHorsePhoto(int horseId, File imageFile) async {
+  Future<String> uploadHorseProfilePhoto(int horseId, File imageFile) async {
     try {
       var request = http.MultipartRequest(
         'PUT',
-        Uri.parse('$_baseUrl/horse/$horseId'),
+        Uri.parse('$apiBaseUrl/horse/$horseId'),
       );
 
       // Get headers, indicating it's a multipart request
-      final headers = await _getHeaders(isMultipart: true);
+      final headers = await HttpClient().getHeaders(isMultipart: true);
       request.headers.addAll(headers); // Add headers
 
       request.files.add(
@@ -184,16 +167,17 @@ class HorseService {
         return jsonResponse['profilePicturePath'] ??
             ''; // Handle potential null
       } else if (response.statusCode == 401) {
-        print('Unauthorized access uploading photo for horse $horseId.');
+        developer
+            .log('Unauthorized access uploading photo for horse $horseId.');
         throw Exception('Unauthorized: Please login again.');
       } else {
-        print(
+        developer.log(
             'Failed to upload photo for horse $horseId: ${response.statusCode}');
-        print('Response body: $responseData');
+        developer.log('Response body: $responseData');
         throw Exception('Failed to upload horse photo');
       }
     } catch (e) {
-      print("Error uploading photo for horse $horseId: $e");
+      developer.log("Error uploading photo for horse $horseId: $e");
       throw Exception('Failed to upload horse photo. Error: $e');
     }
   }

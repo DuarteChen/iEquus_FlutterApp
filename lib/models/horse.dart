@@ -46,7 +46,7 @@ class Horse {
     }
   }
 
-  String? dateName_birthDateToString() {
+  String? dateNameBirthDateToString() {
     if (birthDate == null) {
       return 'No birthday date';
     } else {

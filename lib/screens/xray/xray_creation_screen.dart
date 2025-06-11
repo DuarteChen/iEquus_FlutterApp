@@ -1,11 +1,10 @@
-import 'dart:convert';
 import 'dart:io';
+import 'package:equus/api_services/xray_service.dart'; // Import the service
 import 'package:equus/models/horse.dart';
 import 'package:equus/models/xray_label.dart';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 import 'package:image_picker/image_picker.dart';
-import 'package:http/http.dart' as http;
+import 'dart:developer' as developer; // For logging
 
 class XRayCreation extends StatefulWidget {
   final Horse horse;
@@ -26,6 +25,7 @@ class _XRayCreationState extends State<XRayCreation> {
   ImageStream? _imageStream;
   ImageStreamListener? _imageListener;
   bool _showLabels = true;
+  final XRayService _xrayService = XRayService(); // Instantiate the service
 
   Future<void> _pickImage(ImageSource source) async {
     if (_isUploading) return;
@@ -57,81 +57,34 @@ class _XRayCreationState extends State<XRayCreation> {
       _uploadError = null;
     });
 
-    const storage = FlutterSecureStorage();
-    final token = await storage.read(key: 'jwt');
-    final headers = <String, String>{};
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    } else {
-      setState(() {
-        _isUploading = false;
-        _uploadError = "Authentication error. Please login again.";
-      });
-      return;
-    }
-
     try {
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('https://iequus.craveirochen.pt/xray'),
-      );
-      request.headers.addAll(headers);
-      request.fields['horseId'] = widget.horse.idHorse.toString();
-      request.files.add(
-        await http.MultipartFile.fromPath(
-          'picture',
-          _localXrayImageFile!.path,
-        ),
-      );
+      final result = await _xrayService.uploadXRay(
+          widget.horse.idHorse, _localXrayImageFile!);
 
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
+      final String? returnedUrl = result['uploadedImageUrl'] as String?;
+      final List<XRayLabel>? parsedLabels =
+          result['xrayLabels'] as List<XRayLabel>?;
 
-      if (response.statusCode == 200 || response.statusCode == 201) {
-        var jsonResponse = jsonDecode(responseBody);
-        final String? returnedUrl = jsonResponse['returnedImageUrl'];
-        final Map<String, dynamic>? coordinatesData =
-            jsonResponse['coordinates_data'] as Map<String, dynamic>?;
-
-        if (returnedUrl != null) {
-          List<XRayLabel> parsedLabels = [];
-          if (coordinatesData != null) {
-            for (var value in coordinatesData.values) {
-              if (value is Map<String, dynamic>) {
-                parsedLabels.add(XRayLabel(
-                  name: value['label'] as String? ?? 'Unknown Label',
-                  x: value['x'] as int? ?? 0,
-                  y: value['y'] as int? ?? 0,
-                  description:
-                      value['description'] as String? ?? 'No description',
-                ));
-              }
-            }
-          }
-          setState(() {
-            _uploadedImageUrl = returnedUrl;
-            _xrayLabels = parsedLabels;
-            _localXrayImageFile = null;
-            _updateImageListener();
-            _isUploading = false;
-          });
-          if (mounted) {
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(content: Text('X-Ray uploaded successfully!')),
-            );
-          }
-        } else {
-          throw Exception('API did not return an image URL.');
+      if (returnedUrl != null && parsedLabels != null) {
+        setState(() {
+          _uploadedImageUrl = returnedUrl;
+          _xrayLabels = parsedLabels;
+          _localXrayImageFile =
+              null; // Clear local file after successful upload
+          _updateImageListener(); // Update listener for the new network image
+          _isUploading = false;
+        });
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(content: Text('X-Ray uploaded successfully!')),
+          );
         }
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized access uploading X-Ray.');
       } else {
-        throw Exception(
-            'Upload failed. Status: ${response.statusCode}. Body: $responseBody');
+        // This case should ideally be handled by the service throwing an exception
+        throw Exception('Upload successful but data is missing in response.');
       }
     } catch (e) {
-      debugPrint("Error uploading X-Ray: $e");
+      developer.log("Error uploading X-Ray in screen: $e");
       if (mounted) {
         setState(() {
           _isUploading = false;
