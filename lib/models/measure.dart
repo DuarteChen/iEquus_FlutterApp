@@ -1,7 +1,7 @@
 import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:equus/api_services/measure_service.dart'; // Import MeasureService
-import 'dart:developer' as developer; // For logging
+import 'package:equus/api_services/measure_service.dart';
+import 'dart:developer' as developer;
 
 class Measure {
   int id;
@@ -16,10 +16,9 @@ class Measure {
   int? userBW;
   int? userBCS;
   bool? favorite;
-  int? veterinarianId; // Keep for storing the ID after creation/fetch
+  int? veterinarianId;
   int? appointmentId;
 
-  // --- Constructor, fromJson, toJson, converters remain the same ---
   Measure({
     required this.id,
     this.userBW,
@@ -152,7 +151,6 @@ class Measure {
         throw Exception("Cannot edit measure with ID 0. Upload it first.");
       }
 
-      // Check if there's anything to update
       if (bw == null && bcs == null) {
         debugPrint("No BW or BCS values provided to edit.");
         return true;
@@ -178,7 +176,6 @@ class Measure {
     final measureService = MeasureService();
     try {
       if (id == 0) {
-        // Optionally log or handle this case - measure not on server
         return;
       }
       await measureService.deleteMeasureById(id);
