@@ -175,6 +175,23 @@ class HorseProvider extends ChangeNotifier {
     }
   }
 
+  Future<void> deleteHorse(int horseId) async {
+    // Optional: Set a specific loading state for deletion if needed
+    // _setLoading(true); // Or a new _isDeleting flag
+    try {
+      await _horseService.deleteHorse(horseId);
+      // Remove the horse from the local lists for immediate UI update
+      _horses.removeWhere((horse) => horse.idHorse == horseId);
+      _filteredHorses.removeWhere((horse) => horse.idHorse == horseId);
+      notifyListeners();
+    } catch (e) {
+      // Rethrow the exception to be caught by the UI for user feedback
+      rethrow;
+    } finally {
+      // _setLoading(false);
+    }
+  }
+
   void clear() {
     _horses = [];
     _filteredHorses = [];

@@ -181,4 +181,68 @@ class HorseService {
       throw Exception('Failed to upload horse photo. Error: $e');
     }
   }
+
+  // Made this non-static to access _getHeaders
+  Future<String> deleteHorse(int horseId) async {
+    try {
+      final headers = await HttpClient().getHeaders();
+      final response = await http.delete(
+        Uri.parse('$apiBaseUrl/horse/$horseId'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200 || response.statusCode == 204) {
+        if (response.statusCode == 200 && response.body.isNotEmpty) {
+          // Attempt to decode JSON only if status is 200 and body is not empty
+          try {
+            var jsonResponse = json.decode(response.body);
+            return jsonResponse['message'] ?? 'Horse deleted successfully.';
+          } catch (e) {
+            developer.log(
+                'Successfully deleted horse $horseId but response body was not valid JSON: ${response.body}');
+            return response.body.isNotEmpty
+                ? response.body
+                : 'Horse deleted successfully.';
+          }
+        }
+        // For 204 No Content, or 200 with empty body
+        return 'Horse deleted successfully.';
+      } else if (response.statusCode == 401) {
+        developer.log('Unauthorized access deleting horse $horseId.');
+        throw Exception('Unauthorized: Please login again.');
+      } else if (response.statusCode == 404) {
+        developer.log('Horse $horseId not found for deletion.');
+        throw Exception('Horse not found.');
+      } else {
+        String errorMessage =
+            'Failed to delete horse. Status: ${response.statusCode}';
+        if (response.body.isNotEmpty) {
+          try {
+            var errorJson = json.decode(response.body);
+            errorMessage =
+                errorJson['message'] ?? errorJson['error'] ?? errorMessage;
+          } catch (_) {
+            // Body is not JSON, use raw body if it seems like a message
+            if (response.body.length < 200) {
+              // Heuristic for a message
+              errorMessage = response.body;
+            }
+          }
+        }
+        developer
+            .log('Failed to delete horse $horseId: ${response.statusCode}');
+        developer.log('Response body: ${response.body}');
+        throw Exception(errorMessage);
+      }
+    } catch (e) {
+      developer.log("Error deleting horse $horseId: $e");
+      if (e is SocketException) {
+        throw Exception('Network error. Please check your connection.');
+      }
+      if (e is http.ClientException) {
+        throw Exception('Network error. Please try again.');
+      }
+      rethrow;
+    }
+  }
 }
