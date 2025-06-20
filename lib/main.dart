@@ -21,7 +21,6 @@ void main() {
           ChangeNotifierProvider(create: (_) => VeterinarianProvider()),
           ChangeNotifierProvider(create: (_) => LoginProvider()),
         ],
-        // MyApp no longer needs initialRoute
         child: const MyApp(),
       ),
     );

@@ -157,8 +157,7 @@ class _RegisterScreenState extends State<RegisterScreen> {
         // Error message is set by the provider, but we can also catch specific UI messages
         if (mounted) {
           setState(() {
-            _registrationError =
-                'Registration failed: ${e.toString().replaceFirst("Exception: ", "")}';
+            _registrationError = 'Registration failed, check fields.';
           });
         }
       } finally {

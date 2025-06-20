@@ -1,6 +1,7 @@
 import 'package:flutter_secure_storage/flutter_secure_storage.dart';
 
-const String apiBaseUrl = 'http://10.0.2.2:9090';
+//const String apiBaseUrl = 'http://10.0.2.2:9090';
+const String apiBaseUrl = 'https://iequus.craveirochen.pt';
 
 class HttpClient {
   final _storage = const FlutterSecureStorage();

@@ -1,34 +1,21 @@
 class Hospital {
   final int id;
   final String name;
-  final String streetName;
-  final String streetNumber;
-  final String city;
-  final String country;
-  final String? optionalAddressField;
   final String? logoPath;
+  int veterinarianAdminId;
 
-  Hospital({
-    required this.id,
-    required this.name,
-    required this.streetName,
-    required this.streetNumber,
-    required this.city,
-    required this.country,
-    this.optionalAddressField,
-    this.logoPath,
-  });
+  Hospital(
+      {required this.id,
+      required this.name,
+      this.logoPath,
+      required this.veterinarianAdminId});
 
   factory Hospital.fromMap(Map<String, dynamic> map) {
     return Hospital(
       id: map['id'],
       name: map['name'],
-      streetName: map['streetName'],
-      streetNumber: map['streetNumber'],
-      city: map['city'],
-      country: map['country'],
-      optionalAddressField: map['optionalAddressField'],
       logoPath: map['logoPath'],
+      veterinarianAdminId: map['admin']['idVeterinarian'],
     );
   }
 
@@ -36,12 +23,8 @@ class Hospital {
     return {
       'id': id,
       'name': name,
-      'streetName': streetName,
-      'streetNumber': streetNumber,
-      'city': city,
-      'country': country,
-      'optionalAddressField': optionalAddressField,
       'logoPath': logoPath,
+      'admin': veterinarianAdminId,
     };
   }
 }

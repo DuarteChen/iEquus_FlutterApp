@@ -75,7 +75,7 @@ class VeterinarianService {
       }
     } catch (e) {
       developer.log('Error in VeterinarianService.registerVeterinarian: $e');
-      throw Exception("Error during registration: ${e.toString()}");
+      throw Exception("Error during registration");
     }
   }
 }
