@@ -56,7 +56,9 @@ class VeterinarianProvider with ChangeNotifier {
     const storage = FlutterSecureStorage();
     try {
       final token = await storage.read(key: 'jwt');
-      if (token == null) throw Exception("Authentication token not found.");
+      if (token == null) {
+        throw Exception("Authentication token not found.");
+      }
 
       if (JwtDecoder.isExpired(token)) {
         await storage.delete(key: 'jwt');

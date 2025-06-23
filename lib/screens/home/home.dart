@@ -1,5 +1,7 @@
 import 'package:equus/screens/home/home_page.dart';
 import 'package:equus/screens/horses/horses_list_screen.dart';
+import 'package:equus/providers/horse_provider.dart';
+import 'package:provider/provider.dart';
 import 'package:flutter/material.dart';
 
 class Home extends StatefulWidget {
@@ -21,6 +23,16 @@ class _BottomNavItem {
 class _HomeState extends State<Home> {
   int _selectedIndex = 0;
 
+  @override
+  void initState() {
+    super.initState();
+    // Use addPostFrameCallback to ensure the context is available and to avoid
+    // calling provider during a build phase.
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      Provider.of<HorseProvider>(context, listen: false).loadHorses();
+    });
+  }
+
   void _onItemTapped(int index) {
     setState(() {
       _selectedIndex = index;
@@ -31,7 +43,7 @@ class _HomeState extends State<Home> {
     _BottomNavItem(
       page: const HomePage(),
       title: 'Home',
-      icon: const Icon(Icons.home),
+      icon: const Icon(Icons.cabin),
     ),
     _BottomNavItem(
       page: const HorsesListScreen(),

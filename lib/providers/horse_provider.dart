@@ -18,10 +18,6 @@ class HorseProvider extends ChangeNotifier {
     _isLoading = loading;
   }
 
-  HorseProvider() {
-    loadHorses();
-  }
-
   final List<Client> _horseClients = [];
   final List<Client> _horseOwners = [];
   Horse? _currentHorse;
@@ -42,7 +38,6 @@ class HorseProvider extends ChangeNotifier {
       _updateProfileImageProvider(_currentHorse?.profilePicturePath);
     } catch (e) {
       debugPrint('Error loading horse data in provider: $e');
-      rethrow;
     } finally {
       _setLoading(false);
     }
@@ -121,8 +116,8 @@ class HorseProvider extends ChangeNotifier {
       notifyListeners();
     } catch (error) {
       debugPrint("Error loading horses in provider: $error");
-      //TODO Login again
-      rethrow;
+      // Do not rethrow here, as it can crash the app if not handled by a FutureBuilder.
+      // The UI will now show an empty list or a message, which is safer.
     } finally {
       _setLoading(false);
     }

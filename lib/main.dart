@@ -4,16 +4,20 @@ import 'package:equus/providers/veterinarian_provider.dart';
 import 'package:equus/screens/home/home.dart';
 import 'package:equus/screens/login/login_screen.dart';
 import 'package:equus/screens/splash/splash_screen.dart';
+import 'dart:async';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:provider/provider.dart';
 
-void main() {
-  WidgetsFlutterBinding.ensureInitialized();
+void main() async {
+  // Use runZonedGuarded to catch all unhandled errors
+  runZonedGuarded<Future<void>>(() async {
+    WidgetsFlutterBinding.ensureInitialized();
 
-  SystemChrome.setPreferredOrientations([
-    DeviceOrientation.portraitUp,
-  ]).then((_) async {
+    await SystemChrome.setPreferredOrientations([
+      DeviceOrientation.portraitUp,
+    ]);
+
     runApp(
       MultiProvider(
         providers: [
@@ -24,6 +28,12 @@ void main() {
         child: const MyApp(),
       ),
     );
+  }, (error, stack) {
+    // This block will be executed when an uncaught exception happens.
+    // In a production app, you would report this to a service like
+    // Firebase Crashlytics or Sentry. For now, we just print it.
+    debugPrint('Caught unhandled error: $error');
+    debugPrint(stack.toString());
   });
 }
 

@@ -39,18 +39,14 @@ class _HomePageState extends State<HomePage> {
       ),
       body: Padding(
         padding: const EdgeInsets.symmetric(horizontal: 16.0),
-        child: Expanded(
-          child: SingleChildScrollView(
-            child: Column(
-              children: [
-                welcomeContainer(),
-                SizedBox(height: 8),
-                appointmentsSection(),
-                SizedBox(height: 8),
-                servicesSection(),
-              ],
-            ),
-          ),
+        child: Column(
+          children: [
+            welcomeContainer(),
+            SizedBox(height: 8),
+            appointmentsSection(),
+            SizedBox(height: 8),
+            servicesSection(),
+          ],
         ),
       ),
     );
@@ -204,7 +200,7 @@ class _HomePageState extends State<HomePage> {
             borderRadius: const BorderRadius.all(Radius.circular(15)),
             boxShadow: [
               BoxShadow(
-                color: Colors.black.withOpacity(0.15),
+                color: Colors.grey,
                 blurRadius: 6,
                 offset: const Offset(0, 3),
               ),
@@ -220,7 +216,7 @@ class _HomePageState extends State<HomePage> {
                   Text(
                     'Welcome,',
                     style: TextStyle(
-                      color: Colors.white.withOpacity(0.85),
+                      color: Colors.white,
                       fontSize: 18,
                     ),
                   ),
@@ -240,7 +236,7 @@ class _HomePageState extends State<HomePage> {
                       ? Text(
                           cedulaText,
                           style: TextStyle(
-                            color: Colors.white.withOpacity(0.75),
+                            color: Colors.white,
                             fontSize: 14,
                           ),
                         )
