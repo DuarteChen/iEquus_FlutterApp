@@ -77,6 +77,11 @@ class LoginScreenState extends State<LoginScreen> {
                   mainAxisAlignment: MainAxisAlignment.center,
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
+                    Image.asset(
+                      'assets/images/iEquus_logo.png',
+                      height: 150, // Adjust height as needed
+                    ),
+                    const SizedBox(height: 48), // Add some space below the logo
                     TextFormField(
                       controller: _emailController,
                       decoration: InputDecoration(

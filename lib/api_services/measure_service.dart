@@ -7,6 +7,29 @@ import 'package:http/http.dart' as http;
 import 'package:flutter/foundation.dart'; // For debugPrint
 
 class MeasureService {
+  Future<List<Measure>> fetchMeasuresForHorse(int horseId) async {
+    try {
+      final headers = await HttpClient().getHeaders();
+      final response = await http.get(
+        Uri.parse('$apiBaseUrl/measures/horse/$horseId'),
+        headers: headers,
+      );
+
+      if (response.statusCode == 200) {
+        final List<dynamic> jsonList = jsonDecode(response.body);
+        return jsonList.map((json) => Measure.fromJson(json)).toList();
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized access fetching measures.');
+      } else {
+        throw Exception(
+            'Failed to load measures. Status code: ${response.statusCode}. Response body: ${response.body}');
+      }
+    } catch (e) {
+      developer.log("Error in MeasureService.fetchMeasuresForHorse: $e");
+      rethrow;
+    }
+  }
+
   Future<Map<String, dynamic>> uploadMeasure(
       Measure measure, int currentVeterinarianId) async {
     try {

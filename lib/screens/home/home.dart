@@ -54,7 +54,7 @@ class _HomeState extends State<Home> {
       page: const Center(
           child: Text("Owners Page (Not Implemented)")), // Placeholder
       title: 'Owners',
-      icon: const Icon(Icons.people),
+      icon: const Icon(Icons.people_alt),
     ),
     _BottomNavItem(
       page: const Center(

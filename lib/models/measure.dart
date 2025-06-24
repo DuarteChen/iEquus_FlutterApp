@@ -64,7 +64,7 @@ class Measure {
     }
 
     return Measure(
-      id: json['idMeasure'] ?? 0,
+      id: json['id'] ?? 0,
       userBW: json['userBW'],
       algorithmBW: json['algorithmBW'],
       userBCS: json['userBCS'],
@@ -79,6 +79,8 @@ class Measure {
       appointmentId: json['appointmentId'],
     );
   }
+
+  get idMeasure => null;
 
   Map<String, dynamic> toJson() {
     return {

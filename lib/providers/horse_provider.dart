@@ -2,8 +2,10 @@ import 'dart:io';
 
 import 'package:equus/models/client.dart';
 import 'package:flutter/material.dart';
+import 'package:equus/api_services/measure_service.dart'; // Import MeasureService
 import 'package:equus/models/horse.dart';
 import 'package:equus/api_services/horse_service.dart';
+import 'package:equus/models/measure.dart'; // Import Measure model
 
 class HorseProvider extends ChangeNotifier {
   final HorseService _horseService = HorseService();
@@ -11,9 +13,10 @@ class HorseProvider extends ChangeNotifier {
   List<Horse> _filteredHorses = [];
   bool _isLoading = false;
 
+  final MeasureService _measureService = MeasureService();
+
   List<Horse> get horses => _filteredHorses;
   bool get isLoading => _isLoading;
-
   void _setLoading(bool loading) {
     _isLoading = loading;
   }
@@ -21,11 +24,13 @@ class HorseProvider extends ChangeNotifier {
   final List<Client> _horseClients = [];
   final List<Client> _horseOwners = [];
   Horse? _currentHorse;
+  List<Measure> _horseMeasures = [];
   ImageProvider<Object>? _profileImageProvider;
 
   List<Client> get horseClients => _horseClients;
   List<Client> get horseOwners => _horseOwners;
   Horse? get currentHorse => _currentHorse;
+  List<Measure> get horseMeasures => _horseMeasures;
   ImageProvider<Object>? get profileImageProvider => _profileImageProvider;
 
   // --- Methods using HorseService (JWT handled internally by service) ---
@@ -51,6 +56,19 @@ class HorseProvider extends ChangeNotifier {
     return null;
   }
 
+  Future<void> loadHorseMeasures(int horseId) async {
+    _setLoading(true);
+    try {
+      _horseMeasures = await _measureService.fetchMeasuresForHorse(horseId);
+      notifyListeners();
+    } catch (e) {
+      debugPrint('Error loading horse measures in provider: $e');
+      _horseMeasures = [];
+    } finally {
+      _setLoading(false);
+    }
+  }
+
   Future<void> loadHorseClients(int horseId) async {
     _setLoading(true);
     try {
@@ -69,7 +87,6 @@ class HorseProvider extends ChangeNotifier {
       notifyListeners();
     } catch (e) {
       debugPrint('Error loading horse clients in provider: $e');
-      rethrow;
     } finally {
       _setLoading(false);
     }
@@ -101,7 +118,6 @@ class HorseProvider extends ChangeNotifier {
       await loadHorses();
     } catch (e) {
       debugPrint('Error updating horse photo in provider: $e');
-      rethrow;
     } finally {
       _setLoading(
           false); // Ensure loading is false even if refreshHorses has its own
@@ -164,15 +180,12 @@ class HorseProvider extends ChangeNotifier {
       }
     } catch (e) {
       debugPrint("Error adding horse in provider: $e");
-      rethrow;
     } finally {
       _setLoading(false);
     }
   }
 
   Future<void> deleteHorse(int horseId) async {
-    // Optional: Set a specific loading state for deletion if needed
-    // _setLoading(true); // Or a new _isDeleting flag
     try {
       await _horseService.deleteHorse(horseId);
       // Remove the horse from the local lists for immediate UI update
@@ -180,11 +193,8 @@ class HorseProvider extends ChangeNotifier {
       _filteredHorses.removeWhere((horse) => horse.idHorse == horseId);
       notifyListeners();
     } catch (e) {
-      // Rethrow the exception to be caught by the UI for user feedback
-      rethrow;
-    } finally {
-      // _setLoading(false);
-    }
+      debugPrint("Error deleting horses in provider: $e");
+    } finally {}
   }
 
   void clear() {
@@ -203,6 +213,6 @@ class HorseProvider extends ChangeNotifier {
     } else {
       _profileImageProvider = null;
     }
-    notifyListeners(); // Notify if the image provider changes
+    notifyListeners();
   }
 }

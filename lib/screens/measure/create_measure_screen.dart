@@ -24,6 +24,7 @@ class CreateMeasureScreen extends StatefulWidget {
 
 class CreateMeasureScreenState extends State<CreateMeasureScreen> {
   File? _selectedImage;
+  File? _selectedImageWithCoordinates;
   File? _oldImage;
   String? _networkImageUrl;
   final List<Offset> _coordinates = [];
@@ -75,7 +76,8 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
 
     if (result != null) {
       if (result['coordinates'] != null && result['selectedImage'] != null) {
-        _selectedImage = result['selectedImage'];
+        //_selectedImage = result['selectedImage']; to save the image wihout the coordinates
+        _selectedImageWithCoordinates = result['selectedImage'];
         _oldImage = _selectedImage;
         _coordinates.clear();
         _coordinates.addAll(result['coordinates'].whereType<Offset>());
@@ -408,32 +410,13 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
         alignment: Alignment.center,
         child: _isUploading
             ? const CircularProgressIndicator()
-            : _networkImageUrl != null
-                ? Image.network(
-                    _networkImageUrl!,
+            : _selectedImageWithCoordinates != null
+                ? Image.file(
+                    _selectedImageWithCoordinates!,
                     fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
                     errorBuilder: (context, error, stackTrace) {
-                      return const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.error_outline,
-                              color: Colors.red, size: 40),
-                          SizedBox(height: 8),
-                          Text('Error loading network image',
-                              style: TextStyle(color: Colors.red)),
-                        ],
-                      );
+                      return const Text('Error loading local image',
+                          style: TextStyle(color: Colors.red));
                     },
                   )
                 : _selectedImage != null
