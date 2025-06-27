@@ -1,4 +1,5 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:equus/api_services/measure_service.dart';
 import 'dart:developer' as developer;
@@ -80,8 +81,6 @@ class Measure {
     );
   }
 
-  get idMeasure => null;
-
   Map<String, dynamic> toJson() {
     return {
       'idMeasure': id,
@@ -97,6 +96,15 @@ class Measure {
       'veterinarianId': veterinarianId,
       'appointmentId': appointmentId,
     };
+  }
+
+  // Add this static method for use in MeasureService
+  static String convertOffsetsToJsonStatic(List<Offset> coordinates) {
+    final List<Map<String, double>> mappedCoordinates =
+        coordinates.map((offset) {
+      return {'x': offset.dx, 'y': offset.dy};
+    }).toList();
+    return jsonEncode(mappedCoordinates);
   }
 
   String convertOffsetsToJson(List<Offset> coordinates) {
@@ -184,6 +192,30 @@ class Measure {
     } catch (e) {
       developer.log("Error in Measure.deleteMeasure: $e");
       throw Exception("Error deleting measure: ${e.toString()}");
+    }
+  }
+
+  // New method for updating image and coordinates of an existing measure
+  Future<bool> updateImageAndCoordinates(
+      File pictureFile, List<Offset> newCoordinates) async {
+    final measureService = MeasureService();
+    try {
+      if (id == 0) {
+        throw Exception(
+            "Cannot update image for measure with ID 0. Upload it first.");
+      }
+
+      final updatedData = await measureService.updateMeasureImageAndCoordinates(
+          id, pictureFile, newCoordinates);
+
+      picturePath = updatedData['picturePath'] ?? picturePath;
+      algorithmBCS = updatedData['algorithmBCS'];
+      algorithmBW = updatedData['algorithmBW'];
+      coordinates = newCoordinates; // Update local coordinates
+      return true;
+    } catch (e) {
+      developer.log("Error in Measure.updateImageAndCoordinates: $e");
+      throw Exception("Error updating measure image: ${e.toString()}");
     }
   }
 }

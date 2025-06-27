@@ -301,9 +301,7 @@ class HorseProfileState extends State<HorseProfile>
                                 height: 16), // Add some space at the bottom
                             // This divider is already present after the graphs,
                             // so we might not need an extra one here.
-                            const Divider(height: 32),
                           ] else ...[
-                            const SizedBox(height: 16),
                             Text(
                               'Measures Trends',
                               style: Theme.of(context).textTheme.titleLarge,
@@ -311,7 +309,6 @@ class HorseProfileState extends State<HorseProfile>
                             const SizedBox(height: 8),
                             const Text(
                                 'No measures data available for this horse.'),
-                            const Divider(height: 32),
                           ],
                         ],
                       ),
@@ -630,65 +627,104 @@ class HorseProfileState extends State<HorseProfile>
         (measure) {
           // Use a unique key for each Dismissible widget
           return Dismissible(
-            key: ObjectKey(
-                measure), // Use ObjectKey for unique Measure instances
-            direction: DismissDirection.endToStart, // Swipe from right to left
-            background: Container(
-              color: Colors.red,
-              alignment: Alignment.centerRight,
-              padding: const EdgeInsets.symmetric(horizontal: 20.0),
-              child: const Icon(Icons.delete, color: Colors.white),
+            key: ObjectKey(measure),
+            direction: DismissDirection.horizontal, // Swipe in both directions
+            // Background for swiping from left to right
+            background: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.amber,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                alignment: Alignment.centerLeft,
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: const Icon(Icons.edit, color: Colors.white),
+              ),
+            ),
+            // Background for swiping from right to left (e.g., 'delete')
+            secondaryBackground: Padding(
+              padding: const EdgeInsets.symmetric(vertical: 4.0),
+              child: Container(
+                decoration: BoxDecoration(
+                  color: Colors.red,
+                  borderRadius: BorderRadius.circular(12.0),
+                ),
+                alignment: Alignment.centerRight,
+                padding: const EdgeInsets.symmetric(horizontal: 20.0),
+                child: const Icon(Icons.delete, color: Colors.white),
+              ),
             ),
             confirmDismiss: (direction) async {
-              return await showDialog(
-                context: context,
-                builder: (BuildContext context) {
-                  return AlertDialog(
-                    title: const Text("Confirm Deletion"),
-                    content: Text(
-                        "Are you sure you want to delete the measure from ${measure.date.toLocal().toIso8601String().split('T')[0]}?"),
-                    actions: <Widget>[
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(false),
-                        child: const Text("Cancel"),
-                      ),
-                      TextButton(
-                        onPressed: () => Navigator.of(context).pop(true),
-                        child: const Text("Delete"),
-                      ),
-                    ],
-                  );
-                },
-              );
+              if (direction == DismissDirection.endToStart) {
+                // This is the delete action, show confirmation dialog
+                return await showDialog(
+                  context: context,
+                  builder: (BuildContext context) {
+                    return AlertDialog(
+                      title: const Text("Confirm Deletion"),
+                      content: Text(
+                          "Are you sure you want to delete the measure from ${measure.date.toLocal().toIso8601String().split('T')[0]}?"),
+                      actions: <Widget>[
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(false),
+                          child: const Text("Cancel"),
+                        ),
+                        TextButton(
+                          onPressed: () => Navigator.of(context).pop(true),
+                          child: const Text("Delete"),
+                        ),
+                      ],
+                    );
+                  },
+                );
+              } else {
+                // This is the 'edit' action. We can allow it without confirmation.
+                // Or show a different dialog. For now, just return true.
+                return true;
+              }
             },
             onDismissed: (direction) async {
               final scaffoldMessenger = ScaffoldMessenger.of(context);
-              try {
-                // Call the delete method on the Measure object
-                await measure.deleteMeasure();
 
-                // Refresh the entire screen data after successful deletion
-                setState(() {
-                  _initializationFuture = _initializeScreen();
-                });
-
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                      content: Text(
-                          'Measure from ${measure.date.toLocal().toIso8601String().split('T')[0]} deleted.')),
-                );
-              } catch (e) {
-                debugPrint("Error deleting measure: $e");
-                scaffoldMessenger.showSnackBar(
-                  SnackBar(
-                      content: Text(
-                          'Failed to delete measure from ${measure.date.toLocal().toIso8601String().split('T')[0]}.')),
-                );
-                // If deletion fails, rebuild to show the item again
-                if (mounted) {
+              if (direction == DismissDirection.endToStart) {
+                // --- Delete Action (swiped right to left) ---
+                try {
+                  await measure.deleteMeasure();
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'Measure from ${measure.date.toLocal().toIso8601String().split('T')[0]} deleted.')),
+                  );
+                  // Refresh the entire screen data after successful deletion
                   setState(() {
-                    _initializationFuture =
-                        _initializeScreen(); // Re-fetch to restore if failed
+                    _initializationFuture = _initializeScreen();
+                  });
+                } catch (e) {
+                  debugPrint("Error deleting measure: $e");
+                  scaffoldMessenger.showSnackBar(
+                    SnackBar(
+                        content: Text(
+                            'Failed to delete measure from ${measure.date.toLocal().toIso8601String().split('T')[0]}.')),
+                  );
+                  // If deletion fails, re-fetch to restore the list
+                  if (mounted) {
+                    setState(() {
+                      _initializationFuture = _initializeScreen();
+                    });
+                  }
+                }
+              } else if (direction == DismissDirection.startToEnd) {
+                if (mounted) {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => CreateMeasureScreen(
+                          horse: widget.horse, receivedMeasure: measure),
+                    ),
+                  );
+                  setState(() {
+                    _initializationFuture = _initializeScreen();
                   });
                 }
               }
@@ -696,6 +732,9 @@ class HorseProfileState extends State<HorseProfile>
             child: Card(
               margin: const EdgeInsets.symmetric(vertical: 4.0),
               child: ListTile(
+                leading: measure.favorite == true
+                    ? const Icon(Icons.star, color: Colors.amber)
+                    : null,
                 title: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
@@ -710,7 +749,7 @@ class HorseProfileState extends State<HorseProfile>
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                'BW: Algorithm: ${measure.algorithmBW ?? 'N/A'} Kg - User: ${measure.userBW ?? 'N/A'} Kg',
+                                'BW: Algorithm: ${measure.algorithmBW ?? 'n/d'} kg - User: ${measure.userBW ?? 'n/d'} kg',
                                 style: Theme.of(context).textTheme.bodyMedium,
                               ),
                             ),
@@ -726,7 +765,7 @@ class HorseProfileState extends State<HorseProfile>
                           const SizedBox(width: 8),
                           Expanded(
                             child: Text(
-                              'BCS: Algorithm: ${measure.algorithmBCS ?? 'N/A'}, User: ${measure.userBCS ?? 'N/A'}',
+                              'BCS: Algorithm: ${measure.algorithmBCS ?? 'n/d'}, User: ${measure.userBCS ?? 'n/d'}',
                               style: Theme.of(context).textTheme.bodyMedium,
                             ),
                           ),
@@ -741,12 +780,19 @@ class HorseProfileState extends State<HorseProfile>
                     style: Theme.of(context).textTheme.bodySmall,
                   ),
                 ),
-                onTap: () {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                        content: Text(
-                            'View details for measure on ${measure.date.toLocal().toIso8601String().split('T')[0]}')),
-                  );
+                onTap: () async {
+                  if (mounted) {
+                    await Navigator.push(
+                      context,
+                      MaterialPageRoute(
+                        builder: (context) => CreateMeasureScreen(
+                            horse: widget.horse, receivedMeasure: measure),
+                      ),
+                    );
+                    setState(() {
+                      _initializationFuture = _initializeScreen();
+                    });
+                  }
                 },
               ),
             ),

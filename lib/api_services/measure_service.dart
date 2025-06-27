@@ -1,6 +1,7 @@
 import 'dart:convert';
 import 'dart:developer' as developer;
 import 'dart:io';
+import 'dart:ui';
 import 'package:equus/config/api_constants.dart';
 import 'package:equus/models/measure.dart'; // Import Measure model
 import 'package:http/http.dart' as http;
@@ -173,6 +174,55 @@ class MeasureService {
     } catch (e) {
       developer.log("Error in MeasureService.deleteMeasureById: $e");
       throw Exception("Error deleting measure: ${e.toString()}");
+    }
+  }
+
+  Future<Map<String, dynamic>> updateMeasureImageAndCoordinates(
+      int measureId, File pictureFile, List<Offset> coordinates) async {
+    try {
+      final headers = await HttpClient().getHeaders(isMultipart: true);
+
+      var request = http.MultipartRequest(
+        'PUT', // Use PUT for updating an existing resource
+        Uri.parse(
+            '$apiBaseUrl/measure/$measureId'), // Assuming this endpoint exists or needs to be created
+      );
+      request.headers.addAll(headers);
+
+      // Use the static method from Measure model to convert coordinates
+      request.fields['coordinates'] =
+          Measure.convertOffsetsToJsonStatic(coordinates);
+
+      if (await pictureFile.exists()) {
+        request.files.add(
+          await http.MultipartFile.fromPath('picture', pictureFile.path),
+        );
+      } else {
+        debugPrint("Picture file not found at path: ${pictureFile.path}");
+        throw Exception("Picture file not found.");
+      }
+
+      var response = await request.send();
+      var responseBody = await response.stream.bytesToString();
+
+      if (response.statusCode == 200) {
+        var jsonResponse = jsonDecode(responseBody);
+        // Assuming backend returns updated algorithm values and picture path
+        return {
+          'picturePath': jsonResponse['picturePath'] ?? pictureFile.path,
+          'algorithmBCS': jsonResponse['algorithmBCS'] as int?,
+          'algorithmBW': jsonResponse['algorithmBW'] as int?,
+        };
+      } else if (response.statusCode == 401) {
+        throw Exception('Unauthorized access updating measure image.');
+      } else {
+        throw Exception(
+            'Measure image update failed. Status code: ${response.statusCode}. Response body: $responseBody');
+      }
+    } catch (e) {
+      developer
+          .log("Error in MeasureService.updateMeasureImageAndCoordinates: $e");
+      throw Exception("Error updating measure image: ${e.toString()}");
     }
   }
 }

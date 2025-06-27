@@ -14,7 +14,7 @@ class GaugePainter extends CustomPainter {
     final fullSweepAngle = pi;
     const startAngle = -pi;
 
-    final clampedBCS = bcsValue.clamp(1, 5);
+    final clampedBCS = bcsValue.clamp(0, 5);
     final sweepAngle = (clampedBCS) * (fullSweepAngle / 5);
 
     // Background arc (full scale)
@@ -49,7 +49,7 @@ class GaugePainter extends CustomPainter {
 
     // Draw BCS value at the center
     final textSpan = TextSpan(
-      text: clampedBCS.toInt().toString(),
+      text: clampedBCS == 0 ? "n/d" : clampedBCS.toInt().toString(),
       style: const TextStyle(
         color: Color.fromARGB(255, 46, 95, 138),
         fontSize: 32,
