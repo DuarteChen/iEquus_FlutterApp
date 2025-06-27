@@ -1,4 +1,5 @@
 import 'dart:io';
+import 'package:cached_network_image/cached_network_image.dart';
 import 'package:equus/models/horse.dart';
 import 'package:equus/models/measure.dart';
 import 'package:equus/providers/veterinarian_provider.dart';
@@ -13,10 +14,12 @@ class CreateMeasureScreen extends StatefulWidget {
     super.key,
     required this.horse,
     this.appointmentID,
+    this.receivedMeasure,
   });
 
   final Horse horse;
   final int? appointmentID;
+  final Measure? receivedMeasure;
 
   @override
   CreateMeasureScreenState createState() => CreateMeasureScreenState();
@@ -24,7 +27,7 @@ class CreateMeasureScreen extends StatefulWidget {
 
 class CreateMeasureScreenState extends State<CreateMeasureScreen> {
   File? _selectedImage;
-  File? _oldImage;
+  File? _selectedImageWithCoordinates;
   String? _networkImageUrl;
   final List<Offset> _coordinates = [];
   Measure? measure;
@@ -33,7 +36,6 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
   int? algorithmBW;
   int? _userBCS;
   int? algorithmBCS;
-  bool? favorite;
 
   bool _isUploading = false;
   bool _isSaving = false;
@@ -41,14 +43,26 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
   @override
   void initState() {
     super.initState();
-    measure = Measure(
-      id: 0,
-      date: DateTime.now(),
-      coordinates: [],
-      horseId: widget.horse.idHorse,
-      picturePath: '',
-      appointmentId: widget.appointmentID,
-    );
+    _isUploading = true;
+    measure = widget.receivedMeasure ??
+        Measure(
+          id: 0,
+          date: DateTime.now(),
+          coordinates: [],
+          horseId: widget.horse.idHorse,
+          picturePath: '',
+          appointmentId: widget.appointmentID,
+        );
+
+    _userBW = measure?.userBW;
+    _userBCS = measure?.userBCS;
+    algorithmBW = measure?.algorithmBW;
+    algorithmBCS = measure?.algorithmBCS;
+    if (measure!.picturePath.isNotEmpty) {
+      _networkImageUrl = measure!.picturePath;
+    }
+    _coordinates.addAll(measure!.coordinates);
+    _isUploading = false;
   }
 
   Future<void> _pickImage(ImageSource source) async {
@@ -75,17 +89,16 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
 
     if (result != null) {
       if (result['coordinates'] != null && result['selectedImage'] != null) {
-        _selectedImage = result['selectedImage'];
-        _oldImage = _selectedImage;
+        _selectedImageWithCoordinates =
+            result['selectedImage']; // This is the image with drawn coordinates
+        _selectedImage =
+            File(pickedImage.path); // Keep the original picked image file
         _coordinates.clear();
         _coordinates.addAll(result['coordinates'].whereType<Offset>());
 
         await _createMeasure(_selectedImage!, _coordinates);
       }
     } else {
-      setState(() {
-        _selectedImage = _oldImage;
-      });
       if (context.mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(
@@ -96,12 +109,12 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
   }
 
   Future<void> _createMeasure(
-      File pictureFile, List<Offset> coordinates) async {
+      // Renamed for clarity
+      File pictureFile,
+      List<Offset> coordinates) async {
     if (measure == null) return;
 
-    setState(() {
-      _isUploading = true;
-    });
+    setState(() => _isUploading = true);
 
     measure!.picturePath = pictureFile.path;
     measure!.coordinates = coordinates;
@@ -124,16 +137,23 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
     }
 
     try {
-      bool success = await measure!.firstUploadToServer(
-        currentVeterinarianId: currentVetId,
-      );
+      bool success = false;
+      if (measure!.id == 0) {
+        // This is a new measure, perform initial upload
+        success = await measure!.firstUploadToServer(
+          currentVeterinarianId: currentVetId,
+        );
+      } else {
+        // This is an existing measure, update its image and coordinates
+        success =
+            await measure!.updateImageAndCoordinates(pictureFile, coordinates);
+      }
 
       if (success && mounted) {
         setState(() {
           algorithmBCS = measure!.algorithmBCS;
           algorithmBW = measure!.algorithmBW;
           _networkImageUrl = measure!.picturePath;
-          _selectedImage = null;
         });
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Measure created successfully!')),
@@ -297,8 +317,16 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
 
   @override
   Widget build(BuildContext context) {
-    Widget bcsTile(int? bcsValue) {
+    // Helper method to build a Body Condition Score tile
+    Widget _buildBcsTile({
+      required String title,
+      required int? bcsValue,
+      bool isEditable = false,
+    }) {
       final displayValue = bcsValue ?? 0;
+      // Editing is only allowed if the measure has been saved to the server (has an ID)
+      final canEdit = isEditable && (measure?.id ?? 0) != 0 && !_isUploading;
+
       return Expanded(
         child: Container(
           height: 125,
@@ -314,22 +342,22 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("BCS", style: TextStyle(fontSize: 20)),
-                    GestureDetector(
-                      onTap: (_selectedImage == null &&
-                                  _networkImageUrl == null ||
-                              _isUploading)
-                          ? null
-                          : () => popUpBWOrBCS(context, "Body Condition Score"),
-                      child: Icon(
-                        Icons.edit,
-                        color: (_selectedImage == null &&
-                                    _networkImageUrl == null ||
-                                _isUploading)
-                            ? Colors.grey
-                            : Theme.of(context).primaryColor,
-                      ),
-                    ),
+                    Text(title,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500)),
+                    if (isEditable)
+                      GestureDetector(
+                        onTap: canEdit
+                            ? () =>
+                                popUpBWOrBCS(context, "Body Condition Score")
+                            : null,
+                        child: Icon(
+                          Icons.edit,
+                          color: canEdit
+                              ? Theme.of(context).primaryColor
+                              : Colors.grey,
+                        ),
+                      )
                   ],
                 ),
                 Expanded(
@@ -347,8 +375,16 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
       );
     }
 
-    Widget bwTile(int? weight) {
-      final displayValue = weight ?? 0;
+    // Helper method to build a Body Weight tile
+    Widget _buildBwTile({
+      required String title,
+      required int? weight,
+      bool isEditable = false,
+    }) {
+      final displayValue = weight?.toString() ?? 'n/d';
+      // Editing is only allowed if the measure has been saved to the server (has an ID)
+      final canEdit = isEditable && (measure?.id ?? 0) != 0 && !_isUploading;
+
       return Expanded(
         child: Container(
           height: 125,
@@ -364,30 +400,39 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text("kg", style: TextStyle(fontSize: 20)),
-                    GestureDetector(
-                      onTap:
-                          (_selectedImage == null && _networkImageUrl == null ||
-                                  _isUploading)
-                              ? null
-                              : () => popUpBWOrBCS(context, "Body Weight"),
-                      child: Icon(
-                        Icons.edit,
-                        color: (_selectedImage == null &&
-                                    _networkImageUrl == null ||
-                                _isUploading)
-                            ? Colors.grey
-                            : Theme.of(context).primaryColor,
-                      ),
-                    ),
+                    Text(title,
+                        style: const TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.w500)),
+                    if (isEditable)
+                      GestureDetector(
+                        onTap: canEdit
+                            ? () => popUpBWOrBCS(context, "Body Weight")
+                            : null,
+                        child: Icon(Icons.edit,
+                            color: canEdit
+                                ? Theme.of(context).primaryColor
+                                : Colors.grey),
+                      )
                   ],
                 ),
                 Expanded(
                   child: Center(
-                    child: Text(
-                      displayValue.toString(),
-                      style: const TextStyle(
-                          fontSize: 40, fontWeight: FontWeight.bold),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          displayValue,
+                          style: const TextStyle(
+                              fontSize: 40, fontWeight: FontWeight.bold),
+                        ),
+                        displayValue != 'n/d'
+                            ? Text(
+                                " kg",
+                                style: const TextStyle(
+                                    fontSize: 20, fontWeight: FontWeight.bold),
+                              )
+                            : Text(""),
+                      ],
                     ),
                   ),
                 ),
@@ -408,32 +453,13 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
         alignment: Alignment.center,
         child: _isUploading
             ? const CircularProgressIndicator()
-            : _networkImageUrl != null
-                ? Image.network(
-                    _networkImageUrl!,
+            : _selectedImageWithCoordinates != null
+                ? Image.file(
+                    _selectedImageWithCoordinates!,
                     fit: BoxFit.contain,
-                    loadingBuilder: (context, child, loadingProgress) {
-                      if (loadingProgress == null) return child;
-                      return Center(
-                        child: CircularProgressIndicator(
-                          value: loadingProgress.expectedTotalBytes != null
-                              ? loadingProgress.cumulativeBytesLoaded /
-                                  loadingProgress.expectedTotalBytes!
-                              : null,
-                        ),
-                      );
-                    },
                     errorBuilder: (context, error, stackTrace) {
-                      return const Column(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.error_outline,
-                              color: Colors.red, size: 40),
-                          SizedBox(height: 8),
-                          Text('Error loading network image',
-                              style: TextStyle(color: Colors.red)),
-                        ],
-                      );
+                      return const Text('Error loading local image',
+                          style: TextStyle(color: Colors.red));
                     },
                   )
                 : _selectedImage != null
@@ -445,10 +471,19 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                               style: TextStyle(color: Colors.red));
                         },
                       )
-                    : Image.asset(
-                        'assets/images/horseAppointmentPlaceHolder.png',
-                        fit: BoxFit.contain,
-                      ),
+                    : (_networkImageUrl != null && _networkImageUrl!.isNotEmpty)
+                        ? CachedNetworkImage(
+                            imageUrl: _networkImageUrl!,
+                            fit: BoxFit.contain,
+                            placeholder: (context, url) =>
+                                const CircularProgressIndicator(),
+                            errorWidget: (context, url, error) =>
+                                const Icon(Icons.error),
+                          )
+                        : Image.asset(
+                            'assets/images/horseAppointmentPlaceHolder.png', // Placeholder if no image
+                            fit: BoxFit.contain,
+                          ),
       ),
     );
 
@@ -477,7 +512,7 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
             }
             if (mounted) Navigator.pop(context);
           },
-          icon: const Icon(Icons.arrow_back),
+          icon: const Icon(Icons.delete_outline),
         ),
         title: Text("Measure for ${widget.horse.name}"),
         centerTitle: true,
@@ -510,29 +545,42 @@ class CreateMeasureScreenState extends State<CreateMeasureScreen> {
                     : 'Change Measure Image'),
                 onPressed: (_isUploading || _isSaving)
                     ? null
-                    : () {
-                        if (measure != null && measure!.id != 0) {
-                          measure!.deleteMeasure().then((_) {
-                            _showImageSourceDialog(context);
-                          }).catchError((e) {
-                            _showImageSourceDialog(context);
-                          });
-                        } else {
-                          _showImageSourceDialog(context);
-                        }
-                      },
+                    : () => _showImageSourceDialog(context),
                 style: ElevatedButton.styleFrom(
                   padding: const EdgeInsets.symmetric(vertical: 12),
                   textStyle: const TextStyle(fontSize: 16),
                 ),
               ),
               const SizedBox(height: 16),
-              Row(
-                mainAxisAlignment: MainAxisAlignment.center,
+              Column(
                 children: [
-                  bwTile(_userBW ?? algorithmBW),
-                  const SizedBox(width: 16),
-                  bcsTile(_userBCS ?? algorithmBCS),
+                  Text("Body Weight",
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildBwTile(title: 'Algorithm', weight: algorithmBW),
+                      const SizedBox(width: 16),
+                      _buildBwTile(
+                          title: 'User', weight: _userBW, isEditable: true),
+                    ],
+                  ),
+                  const Divider(height: 40),
+                  Text("Body Condition Score",
+                      style: const TextStyle(
+                          fontSize: 20, fontWeight: FontWeight.w500)),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      _buildBcsTile(title: 'Algorithm', bcsValue: algorithmBCS),
+                      const SizedBox(width: 16),
+                      _buildBcsTile(
+                          title: 'User', bcsValue: _userBCS, isEditable: true),
+                    ],
+                  ),
                 ],
               ),
             ],

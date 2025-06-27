@@ -1,14 +1,14 @@
 import 'package:flutter/material.dart';
 
 class AppointmentMainInfo extends StatefulWidget {
-  DateTime appointmentDate;
+  final DateTime appointmentDate;
 
-  int? lamenessLeftFront;
-  int? lamenessRightFront;
-  int? lamenessLeftHind;
-  int? lamenessRightHind;
+  final int? lamenessLeftFront;
+  final int? lamenessRightFront;
+  final int? lamenessLeftHind;
+  final int? lamenessRightHind;
 
-  AppointmentMainInfo(
+  const AppointmentMainInfo(
       {super.key,
       required this.appointmentDate,
       required this.lamenessLeftFront,

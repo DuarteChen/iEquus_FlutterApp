@@ -1,8 +1,8 @@
 import 'dart:convert';
-import 'dart:io'; // Import dart:io for File
-import 'package:http/http.dart' as http;
+import 'dart:io';
 import 'package:flutter/material.dart';
-import 'package:flutter_secure_storage/flutter_secure_storage.dart';
+import 'package:equus/api_services/measure_service.dart';
+import 'dart:developer' as developer;
 
 class Measure {
   int id;
@@ -17,10 +17,9 @@ class Measure {
   int? userBW;
   int? userBCS;
   bool? favorite;
-  int? veterinarianId; // Keep for storing the ID after creation/fetch
+  int? veterinarianId;
   int? appointmentId;
 
-  // --- Constructor, fromJson, toJson, converters remain the same ---
   Measure({
     required this.id,
     this.userBW,
@@ -66,7 +65,7 @@ class Measure {
     }
 
     return Measure(
-      id: json['idMeasure'] ?? 0,
+      id: json['id'] ?? 0,
       userBW: json['userBW'],
       algorithmBW: json['algorithmBW'],
       userBCS: json['userBCS'],
@@ -99,6 +98,15 @@ class Measure {
     };
   }
 
+  // Add this static method for use in MeasureService
+  static String convertOffsetsToJsonStatic(List<Offset> coordinates) {
+    final List<Map<String, double>> mappedCoordinates =
+        coordinates.map((offset) {
+      return {'x': offset.dx, 'y': offset.dy};
+    }).toList();
+    return jsonEncode(mappedCoordinates);
+  }
+
   String convertOffsetsToJson(List<Offset> coordinates) {
     final List<Map<String, double>> mappedCoordinates =
         coordinates.map((offset) {
@@ -128,164 +136,86 @@ class Measure {
     }
   }
 
-  // Instance method (if needed elsewhere)
-  List<Offset> convertJsonToOffsets(String jsonString) {
-    return Measure.convertJsonToOffsetsStatic(jsonString);
-  }
-
-  Future<Map<String, String>> _getHeaders({bool isMultipart = false}) async {
-    const storage = FlutterSecureStorage(); // Create storage instance
-    final token = await storage.read(key: 'jwt');
-    final headers = <String, String>{};
-
-    if (!isMultipart) {
-      headers['Content-Type'] = 'application/json; charset=UTF-8';
-    }
-
-    if (token != null) {
-      headers['Authorization'] = 'Bearer $token';
-    }
-    return headers;
-  }
-
   Future<bool> firstUploadToServer({required int currentVeterinarianId}) async {
+    final measureService = MeasureService();
     try {
-      final headers = await _getHeaders(isMultipart: true);
+      final updatedData =
+          await measureService.uploadMeasure(this, currentVeterinarianId);
 
-      var request = http.MultipartRequest(
-        'POST',
-        Uri.parse('http://10.0.2.2:9090/measure'),
-      );
-      request.headers.addAll(headers);
-
-      request.fields['date'] = DateTime.now().toIso8601String();
-      request.fields['coordinates'] = convertOffsetsToJson(coordinates);
-      request.fields['horseId'] = horseId.toString();
-
-      request.fields['veterinarianId'] = currentVeterinarianId.toString();
-
-      if (appointmentId != null) {
-        request.fields['appointmentId'] = appointmentId.toString();
-      }
-
-      if (picturePath.isNotEmpty) {
-        final imageFile = File(picturePath);
-        if (await imageFile.exists()) {
-          request.files.add(
-            await http.MultipartFile.fromPath('picture', picturePath),
-          );
-        } else {
-          debugPrint("Picture file not found at path: $picturePath");
-        }
-      } else {
-        debugPrint("No picture path provided for measure upload.");
-      }
-
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
-
-      if (response.statusCode == 201) {
-        var jsonResponse = jsonDecode(responseBody);
-        var jsonMeasure = jsonResponse['measure'];
-
-        id = (jsonMeasure['idMeasure'] as int?) ?? id;
-
-        if (jsonMeasure.containsKey('picturePath')) {
-          String receivedPicturePath = jsonMeasure['picturePath'] ?? '';
-          if (receivedPicturePath.isNotEmpty) {
-            picturePath = receivedPicturePath;
-          }
-        }
-
-        algorithmBCS = (jsonMeasure['algorithmBCS'] as int?);
-        algorithmBW = (jsonMeasure['algorithmBW'] as int?);
-
-        veterinarianId =
-            (jsonMeasure['veterinarianId'] as int?) ?? currentVeterinarianId;
-
-        return true;
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized access uploading measure.');
-      } else {
-        throw Exception(
-            'Measure upload failed. Status code: ${response.statusCode}. Response body: $responseBody');
-      }
+      id = updatedData['id'] ?? id;
+      picturePath = updatedData['picturePath'] ?? picturePath;
+      algorithmBCS = updatedData['algorithmBCS'];
+      algorithmBW = updatedData['algorithmBW'];
+      veterinarianId = updatedData['veterinarianId'] ?? veterinarianId;
+      return true;
     } catch (e) {
-      debugPrint("Error in firstUploadToServer: $e");
+      developer.log("Error in Measure.firstUploadToServer: $e");
       throw Exception("Error uploading measure: ${e.toString()}");
     }
   }
 
   Future<bool> editBWandBCS(int? bw, int? bcs) async {
+    final measureService = MeasureService();
     try {
-      final headers = await _getHeaders(isMultipart: true);
-
       if (id == 0) {
         throw Exception("Cannot edit measure with ID 0. Upload it first.");
       }
 
-      var request = http.MultipartRequest(
-        'PUT',
-        Uri.parse('http://10.0.2.2:9090/measure/$id'),
-      );
-      request.headers.addAll(headers);
-
-      if (bw != null) {
-        request.fields['userBW'] = bw.toString();
-      }
-      if (bcs != null) {
-        request.fields['userBCS'] = bcs.toString();
-      }
-
-      if (request.fields.isEmpty) {
+      if (bw == null && bcs == null) {
         debugPrint("No BW or BCS values provided to edit.");
         return true;
       }
 
-      var response = await request.send();
-      var responseBody = await response.stream.bytesToString();
+      final updatedData =
+          await measureService.updateMeasureBWandBCS(id, bw, bcs);
 
-      if (response.statusCode == 200) {
-        var jsonResponse = jsonDecode(responseBody);
-        userBW = (jsonResponse['userBW'] as int?) ?? userBW;
-        userBCS = (jsonResponse['userBCS'] as int?) ?? userBCS;
-        return true;
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized access editing measure.');
-      } else {
-        throw Exception(
-            'Edit BW and BCS failed. Status code: ${response.statusCode}. Response body: $responseBody');
+      if (updatedData.containsKey('userBW')) {
+        userBW = updatedData['userBW'];
       }
+      if (updatedData.containsKey('userBCS')) {
+        userBCS = updatedData['userBCS'];
+      }
+      return true;
     } catch (e) {
-      debugPrint("Error in editBWandBCS: $e");
+      developer.log("Error in Measure.editBWandBCS: $e");
       throw Exception("Error editing BW and BCS: ${e.toString()}");
     }
   }
 
-  Future<bool> deleteMeasure() async {
+  Future<void> deleteMeasure() async {
+    final measureService = MeasureService();
     try {
-      final headers = await _getHeaders();
-
       if (id == 0) {
-        return true;
+        return;
       }
-
-      final response = await http.delete(
-        Uri.parse('http://10.0.2.2:9090/measure/$id'),
-        headers: headers,
-      );
-
-      if (response.statusCode == 200 || response.statusCode == 204) {
-        return true;
-      } else if (response.statusCode == 401) {
-        throw Exception('Unauthorized access deleting measure.');
-      } else {
-        throw Exception(
-            'Delete measure failed. Status code: ${response.statusCode}. Response body: ${response.body}');
-      }
+      await measureService.deleteMeasureById(id);
     } catch (e) {
-      debugPrint("Error in deleteMeasure: $e");
+      developer.log("Error in Measure.deleteMeasure: $e");
       throw Exception("Error deleting measure: ${e.toString()}");
+    }
+  }
+
+  // New method for updating image and coordinates of an existing measure
+  Future<bool> updateImageAndCoordinates(
+      File pictureFile, List<Offset> newCoordinates) async {
+    final measureService = MeasureService();
+    try {
+      if (id == 0) {
+        throw Exception(
+            "Cannot update image for measure with ID 0. Upload it first.");
+      }
+
+      final updatedData = await measureService.updateMeasureImageAndCoordinates(
+          id, pictureFile, newCoordinates);
+
+      picturePath = updatedData['picturePath'] ?? picturePath;
+      algorithmBCS = updatedData['algorithmBCS'];
+      algorithmBW = updatedData['algorithmBW'];
+      coordinates = newCoordinates; // Update local coordinates
+      return true;
+    } catch (e) {
+      developer.log("Error in Measure.updateImageAndCoordinates: $e");
+      throw Exception("Error updating measure image: ${e.toString()}");
     }
   }
 }

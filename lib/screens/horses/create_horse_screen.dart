@@ -17,6 +17,8 @@ class CreateHorseScreen extends StatefulWidget {
 }
 
 class _CreateHorseScreenState extends State<CreateHorseScreen> {
+  bool isLoading = false;
+
   final _formKey = GlobalKey<FormState>();
   final _nameController = TextEditingController();
   DateTime? _selectedDate;
@@ -65,6 +67,10 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
   }
 
   Future<void> _saveHorse() async {
+    setState(() {
+      isLoading = true;
+    });
+
     if (_formKey.currentState!.validate()) {
       final horseProvider = Provider.of<HorseProvider>(context, listen: false);
 
@@ -89,203 +95,215 @@ class _CreateHorseScreenState extends State<CreateHorseScreen> {
         );
       }
     }
+
+    setState(() {
+      isLoading = false;
+    });
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      resizeToAvoidBottomInset: false,
-      body: Column(
-        children: [
-          // Profile Image
-          ProfileImagePreview(
-            profileImageProvider: _profileImageProvider,
-            onImageSourceSelected: (source) =>
-                pickImage((updatedFile, updatedProvider) {
-              setState(() {
-                _profilePictureFile = updatedFile;
-                _profileImageProvider = updatedProvider;
-              });
-            }, source),
-          ),
+    return isLoading
+        ? Scaffold(body: const Center(child: CircularProgressIndicator()))
+        : Scaffold(
+            resizeToAvoidBottomInset: false,
+            body: Column(
+              children: [
+                // Profile Image
+                ProfileImagePreview(
+                  profileImageProvider: _profileImageProvider,
+                  onImageSourceSelected: (source) =>
+                      pickImage((updatedFile, updatedProvider) {
+                    setState(() {
+                      _profilePictureFile = updatedFile;
+                      _profileImageProvider = updatedProvider;
+                    });
+                  }, source),
+                ),
 
-          // Title Bar
-          Container(
-            width: double.infinity,
-            height: 50,
-            decoration: BoxDecoration(
-              color: Theme.of(context).primaryColor,
-              borderRadius: const BorderRadius.only(
-                bottomLeft: Radius.circular(15),
-                bottomRight: Radius.circular(15),
-              ),
-            ),
-            child: const Center(
-              child: Text(
-                'Create a new Horse',
-                style: TextStyle(color: Colors.white, fontSize: 22),
-              ),
-            ),
-          ),
-          // Main content takes the remaining space
-          Expanded(
-            child: Padding(
-              padding: const EdgeInsets.all(16.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextFormField(
-                      controller: _nameController,
-                      decoration: InputDecoration(
-                        labelText: "Horse Name",
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12.0),
-                        ),
-                      ),
-                      validator: (value) {
-                        if (value == null || value.isEmpty) {
-                          return "Please enter the horse's name";
-                        }
-                        return null;
-                      },
+                // Title Bar
+                Container(
+                  width: double.infinity,
+                  height: 50,
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).primaryColor,
+                    borderRadius: const BorderRadius.only(
+                      bottomLeft: Radius.circular(15),
+                      bottomRight: Radius.circular(15),
                     ),
-                    const SizedBox(height: 16),
-                    InkWell(
-                      onTap: () => _selectDate(context),
-                      child: InputDecorator(
-                        decoration: InputDecoration(
-                          labelText: 'Date of Birth',
-                          border: OutlineInputBorder(
-                            borderRadius: BorderRadius.circular(12.0),
-                          ),
-                        ),
-                        child: Text(
-                          _selectedDate == null
-                              ? 'Select Date'
-                              : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
-                          style: const TextStyle(fontSize: 16),
-                        ),
-                      ),
+                  ),
+                  child: const Center(
+                    child: Text(
+                      'Create a new Horse',
+                      style: TextStyle(color: Colors.white, fontSize: 22),
                     ),
-                    const SizedBox(height: 16),
-                    Center(
-                      child: const Text(
-                        'Horse leg identification',
-                        style: TextStyle(
-                          fontSize: 22,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-
-                    // Image rows
-                    Expanded(
-                      child: Row(
+                  ),
+                ),
+                // Main content takes the remaining space
+                Expanded(
+                  child: Padding(
+                    padding: const EdgeInsets.all(16.0),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                        crossAxisAlignment: CrossAxisAlignment.stretch,
                         children: [
-                          Transform.rotate(
-                            angle: -90 * 3.14159 / 180,
-                            child: const Text('Front'),
+                          TextFormField(
+                            controller: _nameController,
+                            decoration: InputDecoration(
+                              labelText: "Horse Name",
+                              border: OutlineInputBorder(
+                                borderRadius: BorderRadius.circular(12.0),
+                              ),
+                            ),
+                            validator: (value) {
+                              if (value == null || value.isEmpty) {
+                                return "Please enter the horse's name";
+                              }
+                              return null;
+                            },
                           ),
-                          Expanded(
-                            child: SmallImagePreview(
-                              profileImageProvider:
-                                  _pictureLeftFrontProvider, // Use ImageProvider
-                              onImageSourceSelected: (source) =>
-                                  pickImage((updatedFile, updatedProvider) {
-                                // Update pickImage to receive ImageProvider
-                                setState(() {
-                                  _pictureLeftFrontFile = updatedFile;
-                                  _pictureLeftFrontProvider = updatedProvider;
-                                });
-                              }, source),
-                              emptyImage:
-                                  'assets/images/front_left_leg_image.png',
+                          const SizedBox(height: 16),
+                          InkWell(
+                            onTap: () => _selectDate(context),
+                            child: InputDecorator(
+                              decoration: InputDecoration(
+                                labelText: 'Date of Birth',
+                                border: OutlineInputBorder(
+                                  borderRadius: BorderRadius.circular(12.0),
+                                ),
+                              ),
+                              child: Text(
+                                _selectedDate == null
+                                    ? 'Select Date'
+                                    : '${_selectedDate!.day}/${_selectedDate!.month}/${_selectedDate!.year}',
+                                style: const TextStyle(fontSize: 16),
+                              ),
                             ),
                           ),
-                          const SizedBox(width: 16),
+                          const SizedBox(height: 16),
+                          Center(
+                            child: const Text(
+                              'Horse leg identification',
+                              style: TextStyle(
+                                fontSize: 22,
+                              ),
+                            ),
+                          ),
+                          const SizedBox(height: 8),
+
+                          // Image rows
                           Expanded(
-                            child: SmallImagePreview(
-                              profileImageProvider:
-                                  _pictureRightFrontProvider, // Use ImageProvider
-                              onImageSourceSelected: (source) =>
-                                  pickImage((updatedFile, updatedProvider) {
-                                // Update pickImage to receive ImageProvider
-                                setState(() {
-                                  _pictureRightFrontFile = updatedFile;
-                                  _pictureRightFrontProvider = updatedProvider;
-                                });
-                              }, source),
-                              emptyImage:
-                                  'assets/images/front_right_leg_image.png',
+                            child: Row(
+                              children: [
+                                Transform.rotate(
+                                  angle: -90 * 3.14159 / 180,
+                                  child: const Text('Front'),
+                                ),
+                                Expanded(
+                                  child: SmallImagePreview(
+                                    profileImageProvider:
+                                        _pictureLeftFrontProvider, // Use ImageProvider
+                                    onImageSourceSelected: (source) =>
+                                        pickImage(
+                                            (updatedFile, updatedProvider) {
+                                      // Update pickImage to receive ImageProvider
+                                      setState(() {
+                                        _pictureLeftFrontFile = updatedFile;
+                                        _pictureLeftFrontProvider =
+                                            updatedProvider;
+                                      });
+                                    }, source),
+                                    emptyImage:
+                                        'assets/images/front_left_leg_image.png',
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: SmallImagePreview(
+                                    profileImageProvider:
+                                        _pictureRightFrontProvider,
+                                    onImageSourceSelected: (source) =>
+                                        pickImage(
+                                            (updatedFile, updatedProvider) {
+                                      setState(() {
+                                        _pictureRightFrontFile = updatedFile;
+                                        _pictureRightFrontProvider =
+                                            updatedProvider;
+                                      });
+                                    }, source),
+                                    emptyImage:
+                                        'assets/images/front_right_leg_image.png',
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                          const SizedBox(height: 16),
+                          Expanded(
+                            child: Row(
+                              children: [
+                                Transform.rotate(
+                                  angle: -90 * 3.14159 / 180,
+                                  child: const Text('Hind'),
+                                ),
+                                Expanded(
+                                  child: SmallImagePreview(
+                                    profileImageProvider:
+                                        _pictureLeftHindProvider,
+                                    onImageSourceSelected: (source) =>
+                                        pickImage(
+                                            (updatedFile, updatedProvider) {
+                                      setState(() {
+                                        _pictureLeftHindFile = updatedFile;
+                                        _pictureLeftHindProvider =
+                                            updatedProvider;
+                                      });
+                                    }, source),
+                                    emptyImage:
+                                        'assets/images/hind_left_leg_image.png',
+                                  ),
+                                ),
+                                const SizedBox(width: 16),
+                                Expanded(
+                                  child: SmallImagePreview(
+                                    profileImageProvider:
+                                        _pictureRightHindProvider,
+                                    onImageSourceSelected: (source) =>
+                                        pickImage(
+                                            (updatedFile, updatedProvider) {
+                                      setState(() {
+                                        _pictureRightHindFile = updatedFile;
+                                        _pictureRightHindProvider =
+                                            updatedProvider;
+                                      });
+                                    }, source),
+                                    emptyImage:
+                                        'assets/images/hind_right_leg_image.png',
+                                  ),
+                                ),
+                              ],
                             ),
                           ),
                         ],
                       ),
                     ),
-                    const SizedBox(height: 16),
-                    Expanded(
-                      child: Row(
-                        children: [
-                          Transform.rotate(
-                            angle: -90 * 3.14159 / 180,
-                            child: const Text('Hind'),
-                          ),
-                          Expanded(
-                            child: SmallImagePreview(
-                              profileImageProvider:
-                                  _pictureLeftHindProvider, // Use ImageProvider
-                              onImageSourceSelected: (source) =>
-                                  pickImage((updatedFile, updatedProvider) {
-                                // Update pickImage to receive ImageProvider
-                                setState(() {
-                                  _pictureLeftHindFile = updatedFile;
-                                  _pictureLeftHindProvider = updatedProvider;
-                                });
-                              }, source),
-                              emptyImage:
-                                  'assets/images/hind_left_leg_image.png',
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Expanded(
-                            child: SmallImagePreview(
-                              profileImageProvider:
-                                  _pictureRightHindProvider, // Use ImageProvider
-                              onImageSourceSelected: (source) =>
-                                  pickImage((updatedFile, updatedProvider) {
-                                // Update pickImage to receive ImageProvider
-                                setState(() {
-                                  _pictureRightHindFile = updatedFile;
-                                  _pictureRightHindProvider = updatedProvider;
-                                });
-                              }, source),
-                              emptyImage:
-                                  'assets/images/hind_right_leg_image.png',
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
+                  ),
+                ),
+              ],
+            ),
+            bottomNavigationBar: Padding(
+              padding:
+                  const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
+              child: SizedBox(
+                width: double.infinity,
+                child: MainButtonBlue(
+                  buttonText: 'Save',
+                  onTap: _saveHorse,
                 ),
               ),
             ),
-          ),
-        ],
-      ),
-      bottomNavigationBar: Padding(
-        padding: const EdgeInsets.only(left: 16.0, right: 16.0, bottom: 16.0),
-        child: SizedBox(
-          width: double.infinity,
-          child: MainButtonBlue(
-            buttonText: 'Save',
-            onTap: _saveHorse,
-          ),
-        ),
-      ),
-    );
+          );
   }
 }

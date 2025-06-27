@@ -1,4 +1,4 @@
-import 'package:equus/screens/measure/create_appointment.dart';
+import 'package:equus/screens/appointment/create_appointment.dart';
 import 'package:equus/screens/measure/create_measure_screen.dart';
 import 'package:equus/screens/xray/xray_creation_screen.dart';
 import 'package:equus/widgets/horse_list_widget.dart';
