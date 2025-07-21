@@ -53,6 +53,9 @@ git clone https://github.com/DuarteChen/iEquus_FlutterApp.git
 cd iequus_flutter
 flutter pub get
 flutter run
+```
+
+---
 
 ### 📡 Backend
 
