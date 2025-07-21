@@ -29,9 +29,6 @@ void main() async {
       ),
     );
   }, (error, stack) {
-    // This block will be executed when an uncaught exception happens.
-    // In a production app, you would report this to a service like
-    // Firebase Crashlytics or Sentry. For now, we just print it.
     debugPrint('Caught unhandled error: $error');
     debugPrint(stack.toString());
   });
