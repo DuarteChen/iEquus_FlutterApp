@@ -53,3 +53,12 @@ git clone https://github.com/DuarteChen/iEquus_FlutterApp.git
 cd iequus_flutter
 flutter pub get
 flutter run
+
+### 📡 Backend
+
+The app communicates with a Flask-based API that handles:
+- Image and coordinate processing
+- Machine learning predictions
+- Database persistence
+
+[👉 See the iEquus Flask Backend Repository for more details](https://github.com/DuarteChen/iEquus_FlaskServer)
